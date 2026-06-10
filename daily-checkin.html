@@ -2,9 +2,14 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' http: https:">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>🎯 每日打卡</title>
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -317,29 +322,68 @@ input{font-family:inherit;color:var(--tx)}
   opacity:0;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3);
 }
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── HEATMAP ────────────────────────────────────── */
+.heat-wrap{background:var(--s0);border:1px solid var(--bd);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,11px);gap:3px;justify-content:end;overflow-x:auto;padding-bottom:4px}
+.hc{width:11px;height:11px;border-radius:3px;background:var(--s1);border:1px solid rgba(255,255,255,.04)}
+.hc.h1{background:rgba(255,193,7,.4);border-color:rgba(255,193,7,.2)}
+.hc.h2{background:var(--ok);border-color:rgba(0,210,106,.5)}
+.hc.hf{background:#4aa8ff;border-color:rgba(74,168,255,.5)}
+.hc.hx{visibility:hidden}
+
+/* ── FREEZE / REPAIR ────────────────────────────── */
+.sk-freeze{font-size:12px;color:#7cc4ff;margin-top:8px;font-weight:600}
+.repair-btn{
+  margin-left:auto;flex-shrink:0;
+  background:rgba(74,168,255,.12);border:1px solid rgba(74,168,255,.4);border-radius:10px;
+  padding:9px 14px;color:#7cc4ff;font-size:13px;font-weight:700;white-space:nowrap;
+  transition:all .2s;
+}
+.repair-btn:hover{background:rgba(74,168,255,.22);transform:translateY(-1px)}
+.cc-f{background:rgba(74,168,255,.15);color:#7cc4ff;border:1px solid rgba(74,168,255,.35)}
+.lg-f{background:rgba(74,168,255,.3);border:1px solid rgba(74,168,255,.5)}
+
+/* ── REMINDER ROW ───────────────────────────────── */
+.remind-row{display:flex;gap:10px;align-items:center}
+.remind-hint{font-size:12px;color:var(--mu);margin-top:8px;font-weight:500}
+
+/* ── BUDDY / SYNC ───────────────────────────────── */
+.buddy-code{font-size:26px;font-weight:900;letter-spacing:5px;color:#7cc4ff;text-align:center;padding:12px;background:var(--s1);border:1px dashed rgba(74,168,255,.4);border-radius:12px;margin:6px 0 12px;user-select:all}
+.buddy-stat{display:flex;justify-content:space-between;align-items:center;padding:10px 2px;border-bottom:1px solid var(--bd);font-size:14px}
+.flame{font-size:15px;font-weight:800;text-align:center;padding:14px;border-radius:12px;margin-top:12px}
+.flame.on{background:rgba(255,193,7,.12);color:#ffe066;border:1px solid rgba(255,193,7,.35)}
+.flame.off{background:rgba(255,71,87,.1);color:var(--err);border:1px solid rgba(255,71,87,.3)}
+.sync-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.sync-row .save-btn{flex:1}
+.sync-meta{font-size:12px;color:var(--mu);margin-top:8px}
 </style>
+<link rel="manifest" href="manifest.webmanifest">
 </head>
 <body>
 
 <header class="hd">
   <div class="hd-l">
-    <div class="hd-logo">🎯 每日打卡</div>
+    <div class="hd-logo" id="hd-logo">🎯 每日打卡</div>
     <div class="hd-date" id="hd-date"></div>
   </div>
-  <button class="hd-btn" onclick="openModal()">⚙️ 编辑任务</button>
+  <div style="display:flex;gap:8px">
+    <button class="hd-btn" id="btn-lang" onclick="toggleLang()">EN</button>
+    <button class="hd-btn" id="btn-edit" onclick="openModal()">⚙️ 编辑任务</button>
+  </div>
 </header>
 
 <div id="streak-card"></div>
 <div id="punish" style="display:none"></div>
 
 <div class="sec">
-  <div class="sec-t">今日任务</div>
+  <div class="sec-t" id="sec-today"></div>
   <div class="sec-m" id="prog-meta"></div>
 </div>
 <div class="tasks" id="tasks"></div>
 <button class="sb" id="status-btn"></button>
 
-<div class="sec"><div class="sec-t">本月打卡日历</div></div>
+<div class="sec"><div class="sec-t" id="sec-cal"></div></div>
 <div class="cal-wrap">
   <div class="cal-hd">
     <button class="cal-nav" id="cal-prev" onclick="prevMo()">◀</button>
@@ -348,44 +392,71 @@ input{font-family:inherit;color:var(--tx)}
   </div>
   <div class="cal-grid" id="cal-grid"></div>
   <div class="cal-leg">
-    <div class="leg"><div class="lg lg-p"></div>全部完成</div>
-    <div class="leg"><div class="lg lg-pp"></div>部分完成</div>
-    <div class="leg"><div class="lg lg-m"></div>未打卡</div>
-    <div class="leg"><div class="lg lg-t"></div>今天</div>
+    <div class="leg"><div class="lg lg-p"></div><span id="leg-p"></span></div>
+    <div class="leg"><div class="lg lg-pp"></div><span id="leg-pp"></span></div>
+    <div class="leg"><div class="lg lg-m"></div><span id="leg-m"></span></div>
+    <div class="leg"><div class="lg lg-f"></div><span id="leg-f"></span></div>
+    <div class="leg"><div class="lg lg-t"></div><span id="leg-t"></span></div>
   </div>
 </div>
 
-<div class="sec"><div class="sec-t">统计数据</div></div>
+<!-- 热力图 + 分享卡片 -->
+<div class="sec">
+  <div class="sec-t" id="sec-heat"></div>
+  <button class="cal-nav" id="btn-share" onclick="shareCard()"></button>
+</div>
+<div class="heat-wrap">
+  <div class="heat" id="heat"></div>
+</div>
+
+<div class="sec"><div class="sec-t" id="sec-stats"></div></div>
 <div class="stats" id="stats"></div>
 
 <div class="badges">
-  <div class="sec" style="margin-bottom:0"><div class="sec-t">成就徽章</div></div>
+  <div class="sec" style="margin-bottom:0"><div class="sec-t" id="sec-badges"></div></div>
   <div class="bg-grid" id="badges"></div>
+</div>
+
+<!-- 打卡搭子 -->
+<div class="badges" style="background:linear-gradient(135deg,#0a1a2e,#10243d);border-color:rgba(74,168,255,.35)">
+  <div class="sec" style="margin-bottom:0"><div class="sec-t" id="sec-buddy"></div></div>
+  <div id="buddy-body" style="margin-top:14px"></div>
 </div>
 
 <!-- 数据管理 -->
 <div class="badges" style="background:linear-gradient(135deg,#0e0a20,#1a1040);border-color:#312e81">
-  <div class="sec" style="margin-bottom:0"><div class="sec-t">💾 数据管理</div></div>
+  <div class="sec" style="margin-bottom:0"><div class="sec-t" id="sec-data"></div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
-    <button onclick="exportData()" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--p2);transition:border-color .2s">📤 导出 JSON</button>
-    <button onclick="importData()" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--p2);transition:border-color .2s">📥 导入 JSON</button>
+    <button id="btn-export" onclick="exportData()" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--p2);transition:border-color .2s">📤 导出 JSON</button>
+    <button id="btn-import" onclick="importData()" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--p2);transition:border-color .2s">📥 导入 JSON</button>
   </div>
+  <div id="sync-body"></div>
 </div>
 
 <!-- Modal -->
 <div class="ov" id="ov" onclick="ovClick(event)">
   <div class="modal">
     <div class="modal-hd">
-      <div class="modal-title">✏️ 编辑任务</div>
+      <div class="modal-title" id="modal-title">✏️ 编辑任务</div>
       <button class="modal-x" onclick="closeModal()">✕</button>
     </div>
-    <div class="msec">任务列表</div>
+    <div class="msec" id="msec-list"></div>
     <div id="te-list"></div>
-    <button class="add-btn" onclick="addTE()">＋ 添加新任务</button>
-    <button class="save-btn" onclick="saveEdits()">💾 保存任务</button>
+    <button class="add-btn" id="btn-add" onclick="addTE()"></button>
+    <button class="save-btn" id="btn-save" onclick="saveEdits()"></button>
     <div class="dz">
-      <div class="msec" style="color:var(--err)">危险操作</div>
-      <button class="reset-btn" onclick="confirmReset()">🗑️ 清空今日进度</button>
+      <div class="msec" id="msec-remind"></div>
+      <div class="te">
+        <div class="remind-row">
+          <input class="inp" type="time" id="remind-time" style="width:130px" onchange="setReminder(this.value)">
+          <button class="del-btn" id="btn-remind-off" onclick="setReminder('')"></button>
+        </div>
+        <div class="remind-hint" id="remind-hint"></div>
+      </div>
+    </div>
+    <div class="dz">
+      <div class="msec" style="color:var(--err)" id="msec-danger"></div>
+      <button class="reset-btn" id="btn-reset" onclick="confirmReset()"></button>
     </div>
   </div>
 </div>
@@ -394,626 +465,9 @@ input{font-family:inherit;color:var(--tx)}
 <div class="ep" id="ep"></div>
 <div class="toast" id="toast"></div>
 
-<script>
-'use strict';
-/* ══════════════ CONSTANTS ══════════════ */
-const COLORS=['#f97316','#06b6d4','#22c55e','#ec4899','#f59e0b','#8b5cf6','#14b8a6','#3b82f6'];
-const EMS=['🤖','📚','💻','✍️','🧠','🔬','🎯','📝','🏋️','🌟','⚡','🎨','🎵','📊','🔥','💡','🦾','🏆','🌈','⭐'];
-const CIRC=150.796;
-
-const BDEFS=[
-  {id:'b3',  name:'破冰者',  em:'🌱', req:3,  desc:'连续3天'},
-  {id:'b7',  name:'七日勇者',em:'🔥', req:7,  desc:'连续7天'},
-  {id:'b14', name:'两周达人',em:'⭐', req:14, desc:'连续14天'},
-  {id:'b30', name:'月度精英',em:'🏆', req:30, desc:'连续30天'},
-  {id:'b60', name:'钻石意志',em:'💎', req:60, desc:'连续60天'},
-  {id:'b100',name:'百日大师',em:'👑', req:100,desc:'连续100天'},
-];
-
-/* ══════════════ STATE ══════════════ */
-let tasks=[], records={}, calY, calM, draft=[], epTarget=null, nextId=100;
-let prevBest=0; // 已达成的历史最佳连续天数,用于检测新成就解锁
-
-/* ══════════════ DATE ══════════════ */
-const pad=n=>String(n).padStart(2,'0');
-function today(){const d=new Date();return ds(d)}
-function ds(d){return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
-function addDays(dateStr,n){const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+n);return ds(d)}
-
-/* ══════════════ DATA (语义化 IPC,见 preload.js) ══════════════ */
-const API = window.api;
-
-async function loadFromDB(){
-  tasks = await API.getTasks();
-  nextId = tasks.length ? Math.max(100, ...tasks.map(x=>x.id)) + 1 : 100;
-
-  records = {};
-  for (const r of await API.getRecords()) {
-    if (!records[r.date]) records[r.date] = { tasks: {} };
-    records[r.date].tasks[r.task_id] = r.value;
-  }
-  return tasks.length > 0;
-}
-
-function loadDefaults(){
-  tasks=[];
-  records={};
-  nextId=100;
-}
-
-function ensureToday(){
-  const td=today();
-  if(!records[td])records[td]={tasks:{}};
-}
-
-/* ══════════════ CALCS ══════════════ */
-function isPerfect(d){
-  const r=records[d];
-  if(!r||!r.tasks||!tasks.length)return false;
-  return tasks.every(t=>(r.tasks[t.id]||0)>=t.target);
-}
-function hasProgress(d){
-  const r=records[d];
-  if(!r||!r.tasks)return false;
-  return Object.values(r.tasks).some(v=>v>0);
-}
-function dayDone(d){
-  const r=records[d];
-  if(!r||!r.tasks)return 0;
-  return tasks.filter(t=>(r.tasks[t.id]||0)>=t.target).length;
-}
-
-function calcStreak(){
-  const td=today();
-  let s=0,cur=td;
-  // Count back from today
-  while(isPerfect(cur)){
-    s++;
-    cur=addDays(cur,-1);
-    if(s>3650)break;
-  }
-  // If today not perfect, try from yesterday
-  if(s===0){
-    cur=addDays(td,-1);
-    while(isPerfect(cur)){
-      s++;
-      cur=addDays(cur,-1);
-      if(s>3650)break;
-    }
-    return s; // don't include today
-  }
-  return s;
-}
-
-function calcLongest(){
-  const dates=Object.keys(records).sort();
-  let cur=0,max=0;
-  for(let i=0;i<dates.length;i++){
-    if(isPerfect(dates[i])){
-      if(i>0&&isPerfect(dates[i-1])){
-        const pd=new Date(dates[i-1]+'T00:00:00'),cd=new Date(dates[i]+'T00:00:00');
-        const diff=Math.round((cd-pd)/86400000);
-        cur=diff===1?cur+1:1;
-      }else cur=1;
-      max=Math.max(max,cur);
-    }else cur=0;
-  }
-  return max;
-}
-
-function calcBreaks(){
-  const today_=today();
-  const dates=Object.keys(records).filter(d=>d<today_).sort();
-  let breaks=0,prevP=false;
-  for(const d of dates){
-    const p=isPerfect(d);
-    if(!p&&prevP)breaks++;
-    prevP=p;
-  }
-  return breaks;
-}
-
-function monthRate(y,m){
-  const now=new Date();
-  const dim=new Date(y,m+1,0).getDate();
-  const end=(y===now.getFullYear()&&m===now.getMonth())?now.getDate():dim;
-  let perf=0;
-  for(let d=1;d<=end;d++){
-    if(isPerfect(`${y}-${pad(m+1)}-${pad(d)}`))perf++;
-  }
-  return end>0?Math.round(perf/end*100):0;
-}
-
-function totalPerfect(){
-  return Object.keys(records).filter(d=>isPerfect(d)).length;
-}
-
-/* ══════════════ RENDER ══════════════ */
-function renderAll(){
-  // 统计值统一算一次,各渲染函数共享,避免重复遍历全部记录
-  const ctx={
-    td:today(),
-    s:calcStreak(),
-    ls:calcLongest(),
-    tp:totalPerfect(),
-    bc:calcBreaks(),
-  };
-  renderDate();renderStreak(ctx);renderPunish(ctx);
-  renderTasks();renderStatus(ctx);
-  renderCal();renderStats(ctx);renderBadges(ctx);
-}
-
-function renderDate(){
-  document.getElementById('hd-date').textContent=
-    new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-}
-
-function renderStreak(ctx){
-  const {s,ls,tp,td}=ctx;
-  const todayPerfect=isPerfect(td);
-
-  let icon,cardCls,numCls,chipHtml,bestTip='';
-
-  if(s===0&&tp===0){
-    icon='🎯';cardCls='sk-fresh';numCls='fresh';
-    chipHtml=`<span class="sk-chip chip-fresh">开始打卡之旅</span>`;
-  }else if(s===0){
-    icon='💔';cardCls='sk-zero';numCls='zero';
-    chipHtml=`<span class="sk-chip chip-bad">记录已中断</span>`;
-    if(ls>0)bestTip=`<div class="sk-best">历史最高：${ls}天</div>`;
-  }else if(todayPerfect){
-    icon=s>=30?'🏆':s>=14?'⭐':s>=7?'🔥':'🌱';
-    cardCls='sk-ok';numCls='ok';
-    chipHtml=`<span class="sk-chip chip-ok">✅ 今日已完成！</span>`;
-    if(ls>s)bestTip=`<div class="sk-best">历史最高：${ls}天</div>`;
-    else if(ls>0)bestTip=`<div class="sk-best">🏅 正在刷新历史记录！</div>`;
-  }else{
-    icon=s>=7?'🔥':'💪';
-    cardCls='sk-fire';numCls='fire';
-    chipHtml=`<span class="sk-chip chip-go">⚡ 今日进行中</span>`;
-    if(ls>s)bestTip=`<div class="sk-best">历史最高：${ls}天</div>`;
-  }
-
-  document.getElementById('streak-card').innerHTML=`
-    <div class="streak-card ${cardCls}">
-      <div class="sk-left">
-        <div class="sk-icon">${icon}</div>
-        <div>
-          <div class="sk-num ${numCls}">${s}</div>
-          <div class="sk-unit">天连续打卡</div>
-        </div>
-      </div>
-      <div class="sk-right">
-        ${chipHtml}
-        ${bestTip}
-      </div>
-    </div>`;
-}
-
-function renderPunish(ctx){
-  const el=document.getElementById('punish');
-  const {bc,s}=ctx;
-  if(bc>0&&s===0){
-    el.style.display='';
-    el.innerHTML=`
-      <div class="punish">
-        <div class="punish-em">💔</div>
-        <div class="punish-t">
-          <strong>连续记录已中断，已中断 ${bc} 次</strong>
-          今天是重新开始的机会，坚持下去！
-        </div>
-      </div>`;
-  }else{
-    el.style.display='none';
-  }
-}
-
-function renderTasks(){
-  const td=today();
-  const rec=records[td]||{tasks:{}};
-  const done=dayDone(td);
-  const el=document.getElementById('prog-meta');
-  el.innerHTML=`<b>${done}</b> / ${tasks.length} 项完成`;
-
-  if(!tasks.length){
-    document.getElementById('tasks').innerHTML=
-      `<div style="color:var(--mu);text-align:center;padding:24px 0">暂无任务，点击"编辑任务"添加</div>`;
-    return;
-  }
-
-  document.getElementById('tasks').innerHTML=tasks.map((t,i)=>{
-    const n=rec.tasks?.[t.id]||0;
-    const pct=Math.min(1,n/(t.target||1));
-    const offset=CIRC*(1-pct);
-    const col=COLORS[i%COLORS.length];
-    const isDone=n>=t.target;
-    return`
-    <div class="tc${isDone?' done':''}">
-      <div class="ring-wrap">
-        <svg width="54" height="54" viewBox="0 0 54 54">
-          <circle class="rb" cx="27" cy="27" r="22"/>
-          <circle class="rp" cx="27" cy="27" r="22"
-            stroke="${col}"
-            stroke-dasharray="${CIRC}"
-            stroke-dashoffset="${offset}"
-            style="transform:rotate(-90deg);transform-origin:27px 27px"/>
-        </svg>
-        <div class="rem">${isDone?'✅':esc(t.em)}</div>
-      </div>
-      <div class="tc-body">
-        <div class="tc-name">${esc(t.name)}</div>
-        <div class="tc-prog" style="color:${col}">${n} / ${t.target} ${esc(t.unit)}</div>
-        <div class="tc-bar"><div class="tc-fill" style="width:${pct*100}%;background:${col}"></div></div>
-      </div>
-      <div class="tc-ctrl">
-        <button class="tc-btn" title="减少" onclick="chg(${t.id},-1)">−</button>
-        <div class="tc-val" style="color:${col}">${n}</div>
-        <button class="tc-btn" title="增加" onclick="chg(${t.id},1)">＋</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderStatus(ctx){
-  const {td,s}=ctx;
-  const btn=document.getElementById('status-btn');
-  const done=dayDone(td);
-  const total=tasks.length;
-
-  if(total===0){
-    btn.style.display='none';
-    return;
-  }
-  if(done===total){
-    btn.style.display='block';
-    btn.className='sb win';
-    btn.textContent=`🎉 今日所有任务完成！连续打卡第 ${s} 天`;
-  }else if(done>0||hasProgress(td)){
-    btn.style.display='block';
-    btn.className='sb partial';
-    btn.textContent=`⏳ 还有 ${total-done} 项任务未完成，加油！`;
-  }else{
-    // 清空进度后隐藏状态按钮
-    btn.style.display='none';
-  }
-}
-
-function renderCal(){
-  const now=new Date();
-  if(calY===undefined){calY=now.getFullYear();calM=now.getMonth()}
-  document.getElementById('cal-mo').textContent=`${calY}年${calM+1}月`;
-
-  const isCurrentMo=calY===now.getFullYear()&&calM===now.getMonth();
-  document.getElementById('cal-next').disabled=isCurrentMo;
-
-  const firstDow=new Date(calY,calM,1).getDay();
-  const dim=new Date(calY,calM+1,0).getDate();
-  const td=today();
-  const nowMid=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-
-  let h=['日','一','二','三','四','五','六'].map(d=>`<div class="cal-dw">${d}</div>`).join('');
-  for(let i=0;i<firstDow;i++)h+=`<div class="cc"></div>`;
-  for(let d=1;d<=dim;d++){
-    const dateStr=`${calY}-${pad(calM+1)}-${pad(d)}`;
-    const isTd=dateStr===td;
-    const isFut=new Date(calY,calM,d)>nowMid;
-    let cls='cc',txt=d;
-    if(isFut){cls+=' cc-fut'}
-    else if(isTd){
-      cls+=' cc-today';
-      if(isPerfect(dateStr)){cls+=' cc-p';txt='✓'}
-    }else if(isPerfect(dateStr)){cls+=' cc-p';txt='✓'}
-    else if(hasProgress(dateStr)){cls+=' cc-pp';txt='~'}
-    else{cls+=' cc-m'}
-    h+=`<div class="${cls}" title="${dateStr}">${txt}</div>`;
-  }
-  document.getElementById('cal-grid').innerHTML=h;
-}
-
-function renderStats(ctx){
-  const {s,ls,tp,bc}=ctx;
-  const now=new Date();
-  const mr=monthRate(now.getFullYear(),now.getMonth());
-
-  const rows=[
-    {v:s, l:'当前连续<br>打卡天数', c:s>0?'good':'bad'},
-    {v:ls,l:'历史最长<br>连续记录', c:''},
-    {v:tp,l:'累计完美<br>打卡天数', c:tp>0?'good':''},
-    {v:mr+'%',l:'本月完成<br>率',        c:mr>=80?'good':mr>=50?'warn':'bad'},
-    {v:bc,l:'历史连续<br>中断次数',       c:bc===0?'good':bc>3?'bad':'warn'},
-    {v:tasks.length,l:'当前任务<br>数量',  c:''},
-  ];
-  document.getElementById('stats').innerHTML=rows.map(r=>
-    `<div class="stat ${r.c}"><div class="stat-v">${r.v}</div><div class="stat-l">${r.l}</div></div>`
-  ).join('');
-}
-
-function renderBadges(ctx){
-  const best=Math.max(ctx.s,ctx.ls);
-  document.getElementById('badges').innerHTML=BDEFS.map(b=>{
-    const e=best>=b.req;
-    return`<div class="badge ${e?'e':'lk'}">
-      <div class="bg-em">${b.em}</div>
-      <div class="bg-n">${b.name}</div>
-      <div class="bg-r">${b.desc}</div>
-    </div>`;
-  }).join('');
-}
-
-/* ══════════════ INTERACTIONS ══════════════ */
-async function chg(taskId,delta){
-  ensureToday();
-  const td=today();
-  const task=tasks.find(t=>t.id===taskId);
-  if(!task)return;
-  const cur=records[td].tasks[taskId]||0;
-  const newVal=Math.max(0,cur+delta);
-  if(newVal===cur)return;
-  const wasAll=isPerfect(td);
-  records[td].tasks[taskId]=newVal;
-  try{
-    await API.setRecord(td, taskId, newVal);
-  }catch(e){
-    records[td].tasks[taskId]=cur; // 写库失败,回滚内存状态
-    toast('⚠️ 保存失败，请重试');
-    renderAll();
-    return;
-  }
-  if(!wasAll&&isPerfect(td)){
-    celebrate();
-    toast('🎉 太棒了！今日任务全部完成！');
-    checkBadge();
-  }
-  renderAll();
-}
-
-function celebrate(){
-  const ems=['🎉','✨','🎊','⭐','💫','🌟','💥','🎈'];
-  for(let i=0;i<18;i++){
-    const el=document.createElement('div');
-    const em=ems[Math.floor(Math.random()*ems.length)];
-    el.style.cssText=`position:fixed;top:-20px;left:${10+Math.random()*80}%;
-      font-size:${18+Math.random()*14}px;z-index:500;pointer-events:none;
-      animation:fall ${1.2+Math.random()*1.8}s ease-in forwards;
-      animation-delay:${Math.random()*.4}s`;
-    el.textContent=em;
-    document.body.appendChild(el);
-    setTimeout(()=>el.remove(),3000);
-  }
-}
-
-function checkBadge(){
-  const best=Math.max(calcStreak(),calcLongest());
-  // 找出本次新跨过的最高门槛(原实现只在恰好等于阈值时触发,跳档会漏报)
-  const unlocked=BDEFS.filter(b=>best>=b.req&&prevBest<b.req).pop();
-  if(best>prevBest)prevBest=best;
-  if(unlocked)setTimeout(()=>toast(`🏅 新成就解锁：${unlocked.em} ${unlocked.name}！`),2000);
-}
-
-function prevMo(){
-  calM--;if(calM<0){calM=11;calY--}
-  renderCal();
-}
-function nextMo(){
-  const now=new Date();
-  if(calY===now.getFullYear()&&calM>=now.getMonth())return;
-  calM++;if(calM>11){calM=0;calY++}
-  renderCal();
-}
-
-/* ══════════════ MODAL ══════════════ */
-function openModal(){
-  draft=tasks.map(t=>({...t}));
-  renderTE();
-  document.getElementById('ov').classList.add('open');
-}
-function closeModal(){
-  document.getElementById('ov').classList.remove('open');
-  closeEP();
-}
-function ovClick(e){if(e.target===document.getElementById('ov'))closeModal()}
-
-function renderTE(){
-  document.getElementById('te-list').innerHTML=draft.map((t,i)=>`
-    <div class="te" data-i="${i}">
-      <div class="te-r">
-        <div>
-          <div class="te-lbl">emoji</div>
-          <button class="em-btn" onclick="openEP(${i})">${esc(t.em)}</button>
-        </div>
-        <div style="flex:1">
-          <div class="te-lbl">任务名称</div>
-          <input class="inp" value="${esc(t.name)}" placeholder="任务名称"
-            oninput="draft[${i}].name=this.value">
-        </div>
-      </div>
-      <div class="te-r">
-        <div>
-          <div class="te-lbl">每日目标</div>
-          <input class="inp inp-n" type="number" min="1" max="999" value="${t.target}"
-            oninput="draft[${i}].target=parseInt(this.value)||1">
-        </div>
-        <div>
-          <div class="te-lbl">单位</div>
-          <input class="inp inp-u" value="${esc(t.unit)}" placeholder="个/篇"
-            oninput="draft[${i}].unit=this.value">
-        </div>
-        <div style="display:flex;align-items:flex-end">
-          <button class="del-btn" onclick="delTE(${i})">删除</button>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function addTE(){
-  const i=draft.length;
-  draft.push({id:nextId++,name:'',target:1,unit:'个',em:EMS[i%EMS.length]});
-  renderTE();
-  setTimeout(()=>{
-    document.querySelector('#te-list .te:last-child .inp')?.focus();
-  },50);
-}
-function delTE(i){
-  if(draft.length<=1){toast('⚠️ 至少需要保留一个任务');return}
-  draft.splice(i,1);renderTE();
-}
-async function saveEdits(){
-  for(const t of draft){
-    if(!t.name.trim()){toast('⚠️ 任务名称不能为空');return}
-    if(!t.target||t.target<1){toast('⚠️ 目标数量至少为1');return}
-  }
-  const cleaned=draft.map(t=>({...t,name:t.name.trim(),unit:t.unit.trim()||'个'}));
-  try{
-    await API.saveTasks(cleaned);
-  }catch(e){
-    toast('⚠️ 保存失败，请重试');
-    return;
-  }
-  tasks=cleaned;
-  closeModal();renderAll();
-  toast('✅ 任务已保存！');
-}
-async function confirmReset(){
-  if(!confirm('确认清空今日所有进度？此操作不可撤销。'))return;
-  try{
-    await API.deleteDateRecords(today());
-  }catch(e){
-    toast('⚠️ 操作失败，请重试');
-    return;
-  }
-  delete records[today()];
-  closeModal();renderAll();
-  toast('🗑️ 今日进度已清空');
-}
-
-async function exportData(){
-  let data;
-  try{
-    data = await API.exportJSON();
-  }catch(e){
-    toast('⚠️ 导出失败，请重试');
-    return;
-  }
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`daily-checkin-${today()}.json`;
-  document.body.appendChild(a);a.click();
-  document.body.removeChild(a);URL.revokeObjectURL(url);
-  toast('📤 数据已导出为 JSON 文件');
-}
-
-async function importData(){
-  const inp=document.createElement('input');
-  inp.type='file';inp.accept='.json';
-  inp.onchange=e=>{
-    const file=e.target.files[0];
-    if(!file)return;
-    const reader=new FileReader();
-    reader.onload=async ev=>{
-      try{
-        const data=JSON.parse(ev.target.result);
-        if(!Array.isArray(data.tasks)||!data.tasks.length||typeof data.records!=='object'){toast('⚠️ 文件格式不正确');return}
-        if(!confirm(`导入数据将覆盖当前所有记录（含 ${Object.keys(data.records).length} 天打卡记录），确认？`))return;
-        await API.importJSON(data);
-        await loadFromDB();
-        ensureToday();
-        closeModal();renderAll();
-        toast('📥 数据导入成功！');
-      }catch(err){toast('⚠️ 文件解析失败：'+err.message)}
-    };
-    reader.readAsText(file);
-  };
-  inp.click();
-}
-
-/* ══════════════ EMOJI PICKER ══════════════ */
-function openEP(idx){
-  epTarget=idx;
-  const ep=document.getElementById('ep');
-  ep.innerHTML=EMS.map(e=>`<button class="ep-b" onclick="pickEM('${e}')">${e}</button>`).join('');
-  const btns=document.querySelectorAll('.em-btn');
-  const btn=btns[idx];
-  if(btn){
-    const r=btn.getBoundingClientRect();
-    ep.style.top=Math.min(r.bottom+6,window.innerHeight-180)+'px';
-    ep.style.left=Math.max(4,Math.min(r.left,window.innerWidth-220))+'px';
-  }
-  ep.classList.add('open');
-  setTimeout(()=>document.addEventListener('click',epOut),100);
-}
-function pickEM(em){
-  if(epTarget!==null){draft[epTarget].em=em;renderTE()}
-  closeEP();
-}
-function closeEP(){
-  document.getElementById('ep').classList.remove('open');
-  document.removeEventListener('click',epOut);
-  epTarget=null;
-}
-function epOut(e){
-  if(!document.getElementById('ep').contains(e.target))closeEP();
-}
-
-/* ══════════════ TOAST ══════════════ */
-let _tt;
-function toast(msg){
-  const el=document.getElementById('toast');
-  el.textContent=msg;el.classList.add('show');
-  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);
-}
-
-/* ══════════════ UTILS ══════════════ */
-function esc(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ══════════════ 跨天检测 & 快捷键 ══════════════ */
-let _day=today();
-function checkRollover(){
-  // 应用挂过零点后,所有"今日"相关状态要切到新的一天
-  if(today()===_day)return;
-  _day=today();
-  ensureToday();
-  renderAll();
-  toast('🌅 新的一天开始了，加油打卡！');
-}
-setInterval(checkRollover,30000);
-window.addEventListener('focus',checkRollover);
-
-document.addEventListener('keydown',e=>{
-  if(e.key!=='Escape')return;
-  if(document.getElementById('ep').classList.contains('open'))closeEP();
-  else if(document.getElementById('ov').classList.contains('open'))closeModal();
-});
-
-/* ══════════════ INIT ══════════════ */
-async function init(){
-  if (!window.api) {
-    document.body.innerHTML = '<div style="color:#fff;text-align:center;padding:40px">请使用 Electron 启动此应用<br><br><code>npm start</code></div>';
-    return;
-  }
-
-  let loaded=false;
-  try{
-    loaded = await loadFromDB();
-  }catch(e){
-    toast('⚠️ 数据加载失败：'+e.message);
-  }
-  if (!loaded) loadDefaults();
-
-  ensureToday();
-  prevBest=Math.max(calcStreak(),calcLongest());
-  renderAll();
-
-  const yst=addDays(today(),-1);
-  if(!records[yst]&&totalPerfect()>0&&!isPerfect(today())){
-    setTimeout(()=>toast('💪 新的一天开始了，加油打卡！'),800);
-  }
-}
-
-init();
-</script> 
+<script src="core.js"></script>
+<script src="storage.js"></script>
+<script src="renderer.js"></script>
+<script src="sync.js"></script>
 </body>
 </html>

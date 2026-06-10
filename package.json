@@ -1,14 +1,25 @@
 {
   "name": "daily-checkin",
-  "version": "1.1.0",
+  "version": "2.1.0",
   "private": true,
-  "description": "每日打卡桌面应用",
+  "description": "带连续打卡、修复券、热力图、成就、云同步与打卡搭子的每日习惯应用(桌面 + Web)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "web": "node scripts/serve.js",
+    "serve": "node server.js",
+    "test": "node --test test/core.test.js test/merge.test.js && node test/server.e2e.mjs",
     "build": "electron-builder --win"
   },
-  "author": "",
+  "keywords": [
+    "electron",
+    "habit-tracker",
+    "daily-checkin",
+    "sqlite",
+    "pwa",
+    "productivity"
+  ],
+  "author": "Daily Check-in contributors",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -27,7 +38,15 @@
     "files": [
       "main.js",
       "preload.js",
+      "core.js",
+      "storage.js",
+      "renderer.js",
+      "sync.js",
       "daily-checkin.html",
+      "daily-checkin.json",
+      "manifest.webmanifest",
+      "icon.svg",
+      "sw.js",
       "node_modules/sql.js/dist/sql-wasm.wasm"
     ],
     "directories": {

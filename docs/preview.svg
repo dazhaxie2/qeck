@@ -1,0 +1,85 @@
+<svg width="1200" height="720" viewBox="0 0 1200 720" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Daily Check-in preview</title>
+  <desc id="desc">A dark mobile habit tracker interface with streak, tasks, calendar, heatmap and badges.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F0F1A"/>
+      <stop offset="0.55" stop-color="#17172C"/>
+      <stop offset="1" stop-color="#311329"/>
+    </linearGradient>
+    <linearGradient id="phone" x1="398" y1="36" x2="792" y2="686" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B1B31"/>
+      <stop offset="1" stop-color="#11111E"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="428" y1="124" x2="772" y2="250" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2D1F4A"/>
+      <stop offset="1" stop-color="#3D2A5F"/>
+    </linearGradient>
+    <filter id="shadow" x="336" y="4" width="528" height="716" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000" flood-opacity="0.42"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <circle cx="180" cy="156" r="92" fill="#FE2C55" opacity=".12"/>
+  <circle cx="1032" cy="552" r="126" fill="#00D26A" opacity=".09"/>
+  <text x="82" y="132" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="58" font-weight="800">每日打卡</text>
+  <text x="84" y="186" fill="#FF8FA3" font-family="Inter, system-ui, sans-serif" font-size="27" font-weight="700">Daily Check-in</text>
+  <text x="84" y="247" fill="#C9C9DA" font-family="Inter, system-ui, sans-serif" font-size="24">连续打卡、热力图、修复券、成就徽章</text>
+  <text x="84" y="287" fill="#8A8AB0" font-family="Inter, system-ui, sans-serif" font-size="20">一个专注、离线优先、可打包的 Electron 习惯追踪器。</text>
+
+  <g filter="url(#shadow)">
+    <rect x="390" y="34" width="420" height="652" rx="42" fill="#0B0B14"/>
+    <rect x="410" y="54" width="380" height="612" rx="30" fill="url(#phone)" stroke="#3A3A6A"/>
+    <text x="434" y="102" fill="#FE2C55" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="800">🎯 每日打卡</text>
+    <text x="434" y="130" fill="#8A8AB0" font-family="Inter, system-ui, sans-serif" font-size="14">Wednesday, June 10</text>
+
+    <rect x="434" y="158" width="332" height="112" rx="22" fill="url(#accent)" stroke="#6B4BA3"/>
+    <text x="456" y="229" fill="#FFC107" font-family="Inter, system-ui, sans-serif" font-size="74" font-weight="900">18</text>
+    <text x="550" y="220" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="22" font-weight="800">day streak</text>
+    <rect x="640" y="184" width="102" height="32" rx="16" fill="#FE2C55" opacity=".18" stroke="#FF6B8A"/>
+    <text x="662" y="206" fill="#FF8FA3" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="700">Going</text>
+
+    <text x="434" y="306" fill="#8A8AB0" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="800" letter-spacing="1.5">TODAY'S TASKS</text>
+    <g>
+      <rect x="434" y="322" width="332" height="74" rx="18" fill="#1A1A2E" stroke="#3A3A6A"/>
+      <circle cx="472" cy="359" r="22" fill="#252542" stroke="#00D26A" stroke-width="4"/>
+      <text x="462" y="367" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="20">💻</text>
+      <text x="510" y="352" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="700">算法题</text>
+      <text x="510" y="375" fill="#00D26A" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="700">2 / 2 题</text>
+      <rect x="688" y="342" width="42" height="36" rx="10" fill="#252542" stroke="#3A3A6A"/>
+      <text x="703" y="366" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="700">+</text>
+    </g>
+    <g>
+      <rect x="434" y="408" width="332" height="74" rx="18" fill="#1A1A2E" stroke="#3A3A6A"/>
+      <circle cx="472" cy="445" r="22" fill="#252542" stroke="#FF8FA3" stroke-width="4"/>
+      <text x="462" y="453" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="20">📚</text>
+      <text x="510" y="438" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="17" font-weight="700">阅读复盘</text>
+      <text x="510" y="461" fill="#FF8FA3" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="700">3 / 5 页</text>
+      <rect x="688" y="428" width="42" height="36" rx="10" fill="#252542" stroke="#3A3A6A"/>
+      <text x="703" y="452" fill="#F0F0F5" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="700">+</text>
+    </g>
+
+    <rect x="434" y="510" width="332" height="100" rx="20" fill="#1A1A2E" stroke="#3A3A6A"/>
+    <text x="456" y="542" fill="#8A8AB0" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="800">ACTIVITY HEATMAP</text>
+    <g fill="#252542">
+      <rect x="456" y="562" width="14" height="14" rx="4"/><rect x="476" y="562" width="14" height="14" rx="4" fill="#00D26A"/><rect x="496" y="562" width="14" height="14" rx="4" fill="#FFC107" opacity=".75"/><rect x="516" y="562" width="14" height="14" rx="4" fill="#00D26A"/><rect x="536" y="562" width="14" height="14" rx="4"/>
+      <rect x="456" y="582" width="14" height="14" rx="4" fill="#00D26A"/><rect x="476" y="582" width="14" height="14" rx="4"/><rect x="496" y="582" width="14" height="14" rx="4" fill="#00D26A"/><rect x="516" y="582" width="14" height="14" rx="4"/><rect x="536" y="582" width="14" height="14" rx="4" fill="#4AA8FF"/>
+      <rect x="556" y="562" width="14" height="14" rx="4" fill="#00D26A"/><rect x="576" y="562" width="14" height="14" rx="4"/><rect x="596" y="562" width="14" height="14" rx="4" fill="#00D26A"/><rect x="616" y="562" width="14" height="14" rx="4" fill="#FFC107" opacity=".75"/><rect x="636" y="562" width="14" height="14" rx="4" fill="#00D26A"/>
+      <rect x="556" y="582" width="14" height="14" rx="4"/><rect x="576" y="582" width="14" height="14" rx="4" fill="#00D26A"/><rect x="596" y="582" width="14" height="14" rx="4"/><rect x="616" y="582" width="14" height="14" rx="4" fill="#00D26A"/><rect x="636" y="582" width="14" height="14" rx="4"/>
+      <rect x="656" y="562" width="14" height="14" rx="4" fill="#00D26A"/><rect x="676" y="562" width="14" height="14" rx="4" fill="#00D26A"/><rect x="696" y="562" width="14" height="14" rx="4"/><rect x="716" y="562" width="14" height="14" rx="4" fill="#00D26A"/>
+      <rect x="656" y="582" width="14" height="14" rx="4"/><rect x="676" y="582" width="14" height="14" rx="4" fill="#4AA8FF"/><rect x="696" y="582" width="14" height="14" rx="4" fill="#00D26A"/><rect x="716" y="582" width="14" height="14" rx="4"/>
+    </g>
+  </g>
+
+  <g>
+    <rect x="862" y="152" width="220" height="72" rx="16" fill="#1A1A2E" stroke="#3A3A6A"/>
+    <text x="886" y="184" fill="#00D26A" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="900">SQLite</text>
+    <text x="886" y="207" fill="#8A8AB0" font-family="Inter, system-ui, sans-serif" font-size="15">本地离线存储</text>
+    <rect x="862" y="248" width="220" height="72" rx="16" fill="#1A1A2E" stroke="#3A3A6A"/>
+    <text x="886" y="280" fill="#FFC107" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="900">Badges</text>
+    <text x="886" y="303" fill="#8A8AB0" font-family="Inter, system-ui, sans-serif" font-size="15">成就驱动反馈</text>
+    <rect x="862" y="344" width="220" height="72" rx="16" fill="#1A1A2E" stroke="#3A3A6A"/>
+    <text x="886" y="376" fill="#4AA8FF" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="900">Repair</text>
+    <text x="886" y="399" fill="#8A8AB0" font-family="Inter, system-ui, sans-serif" font-size="15">断签修复券</text>
+  </g>
+</svg>

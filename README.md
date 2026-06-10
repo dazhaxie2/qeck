@@ -1,31 +1,122 @@
-# 🎯 每日打卡
+<p align="center">
+  <img src="docs/preview.svg" alt="每日打卡 Daily Check-in preview" width="100%">
+</p>
 
-基于 Electron 的桌面每日打卡应用:自定义任务与每日目标、连续打卡统计、月历视图、成就徽章、JSON 导入导出。
+<h1 align="center">🎯 每日打卡 Daily Check-in</h1>
 
-## 使用
+<p align="center">
+  一个离线优先、带激励反馈的习惯追踪器：连续打卡、断签修复券、热力图、成就徽章、云同步、打卡搭子、JSON 备份，一次到位。
+</p>
+
+<p align="center">
+  <img alt="Electron" src="https://img.shields.io/badge/Electron-42-47848F?logo=electron&logoColor=white">
+  <img alt="SQLite" src="https://img.shields.io/badge/storage-SQLite%20%2B%20sql.js-0F7A40">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-node%20--test-2EA44F">
+  <img alt="License" src="https://img.shields.io/badge/license-ISC-blue">
+</p>
+
+## 为什么值得一试
+
+- **不是普通 todo list**：按“每日目标 + 连续反馈 + 成就解锁”设计，更适合学习、运动、阅读、刷题这类需要长期坚持的事情。
+- **离线优先**：桌面版数据保存在本机 SQLite，浏览器版使用 localStorage，不连云端也完整可用。
+- **可选云同步**：自带零依赖同步服务器（`server.js`），多设备字段级合并（LWW + 墓碑删除 + 修复日并集），令牌即身份，无需密码。
+- **打卡搭子**：邀请码绑定一位搭子，互看今日状态与连续天数；“共同火焰”只在两人都完成的日子燃烧——一人断签，两人一起熄灭。
+- **断签修复券**：每 7 个完美打卡日获得 1 张修复券，偶尔断一天也能保住长期节奏。
+- **可视化反馈完整**：月历、热力图、当前连续天数、历史最长、月完成率、成就徽章都在一个界面里。
+- **可导入导出**：一键导出 JSON，换设备、备份、迁移都方便。
+- **代码结构轻量**：核心打卡计算在 `core.js`，无 DOM / Electron 依赖，已配套 `node:test` 单元测试。
+
+## 快速开始
 
 ```bash
-npm install   # 首次
-npm start     # 启动应用
-npm run build # 打包 Windows 便携版,输出到 dist/
+npm install
+npm test
+npm start
 ```
 
-## 数据存储
+也可以先用浏览器预览：
 
-- 数据保存在 SQLite 文件:`%APPDATA%\daily-checkin\daily-checkin.sqlite`
-- 每次启动会自动生成备份 `daily-checkin.sqlite.bak`;主库损坏时自动回退到备份
-- 也可以在应用内通过「数据管理」导出 / 导入 JSON
+```bash
+npm run web
+```
 
-## 结构
+然后打开终端输出的本地地址，默认是 `http://localhost:4173`。
+
+## 常用命令
+
+| 命令 | 说明 |
+| --- | --- |
+| `npm start` | 启动 Electron 桌面应用 |
+| `npm run web` | 启动浏览器预览版（纯静态） |
+| `npm run serve` | 启动云同步服务器（同时托管 PWA，默认 `http://localhost:8787`） |
+| `npm test` | 运行核心逻辑 + 合并算法测试，以及服务器 API 全流程 E2E |
+| `npm run build` | 打包 Windows portable 版本，产物输出到 `dist/` |
+
+## 云同步与打卡搭子
+
+1. 任意一台机器（或服务器）上运行 `npm run serve`，可用 `PORT`、`SYNC_DATA` 环境变量定制端口与数据文件位置。
+2. 应用内「数据管理」填入服务器地址和昵称，点「连接云同步」——注册即登录，令牌保存在本机。
+3. 本地每次打卡后约 2.5 秒自动增量同步；多设备并发修改按“单元格级最新写入获胜”合并，修复日取并集，不会互相覆盖。
+4. 「打卡搭子」卡片里把你的邀请码发给朋友，对方填入即配对成功。之后互相能看到今日是否完成、连续天数，以及两人的共同火焰 🔥——只在双方都完成的日子才会延续。
+
+## 功能一览
+
+- 自定义任务：名称、emoji、每日目标、单位都可编辑
+- 今日进度：每个任务支持快速加减，完成后即时刷新状态
+- 连续打卡：自动计算当前连续天数与历史最长记录
+- 修复券机制：完美打卡累计奖励，用于补回昨日断签
+- 月历视图：区分完美、部分完成、未打卡、已修复、今天
+- 近半年热力图：像贡献图一样看到坚持轨迹
+- 成就徽章：3 / 7 / 14 / 30 / 60 / 100 天连续记录
+- 每日提醒：到点提醒未完成的今日任务
+- 分享卡片：生成当天打卡卡片，方便晒进度
+- JSON 导入导出：数据备份和迁移更安心
+- 中英文切换：同一套核心文案支持双语
+
+## 数据与隐私
+
+桌面版数据默认保存在：
+
+```text
+%APPDATA%\daily-checkin\daily-checkin.sqlite
+```
+
+应用启动时会自动写入 `daily-checkin.sqlite.bak` 备份。如果主库损坏，会尝试回退到备份文件。浏览器预览版不会写 SQLite，而是使用当前浏览器的 localStorage。
+
+## 项目结构
 
 | 文件 | 作用 |
 | --- | --- |
-| `main.js` | 主进程:窗口、SQLite(sql.js)存储、语义化 IPC(带输入校验) |
-| `preload.js` | contextBridge,只暴露白名单 API,渲染层不能执行原始 SQL |
-| `daily-checkin.html` | 全部 UI 与渲染逻辑(单文件) |
+| `main.js` | Electron 主进程、窗口创建、SQLite 初始化、IPC 处理 |
+| `preload.js` | 通过 `contextBridge` 暴露白名单 API，隔离渲染层和原始 SQL |
+| `daily-checkin.html` | 页面结构与样式 |
+| `renderer.js` | UI 渲染、交互、导入导出、提醒、分享卡片 |
+| `core.js` | 纯函数领域逻辑：日期、连续天数、修复券、成就、统计、双语词典（Node 与浏览器共用） |
+| `storage.js` | 浏览器模式的 localStorage 适配器（与 Electron IPC 接口一致） |
+| `sync.js` | 客户端云同步引擎与搭子 UI：变更打点、防抖增量同步、合并回写 |
+| `server.js` | 零依赖云同步服务器：注册 / 鉴权 / LWW 合并 / 搭子配对 / 静态托管 PWA，服务端复用 `core.js` |
+| `manifest.webmanifest` / `sw.js` | PWA 元数据与离线缓存 |
+| `test/core.test.js` | 核心逻辑单元测试 |
+| `test/merge.test.js` | 同步合并算法与共同火焰单元测试 |
+| `test/server.e2e.mjs` | 服务器 API 全流程 E2E（注册→同步→配对→冲突合并） |
+| `scripts/serve.js` | 无依赖本地静态预览服务器 |
 
 ## 安全设定
 
-- `contextIsolation: true`、`nodeIntegration: false`、`sandbox: true`
-- 页面带 CSP;窗口禁止导航与新窗口弹出
-- 单实例锁,避免两个实例互相覆盖数据库
+- `contextIsolation: true`
+- `nodeIntegration: false`
+- `sandbox: true`
+- 页面带 CSP
+- 禁止页面导航与新窗口弹出
+- 使用单实例锁，避免两个应用实例同时写入数据库
+- IPC 只暴露语义化操作，不把原始 SQL 暴露给渲染进程
+
+## 路线图
+
+短期计划见 [ROADMAP.md](ROADMAP.md)。云同步与打卡搭子已落地（自托管 `server.js`）；下一步方向：移动端原生封装（Capacitor 复用 `core.js`）、搭子互推提醒、小组打卡与排行榜、截图自动化、更多平台打包。
+
+## 参与贡献
+
+欢迎提 issue、交 PR 或直接给使用体验建议。开始前可以先看 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
+如果这个项目对你有用，欢迎点一个 Star。它会让这个小工具更容易被同样想坚持做事的人发现。

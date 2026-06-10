@@ -67,6 +67,13 @@ async function initDB() {
     value INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (date, task_id)
   )`);
+  db.run(`CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  )`);
+  db.run(`CREATE TABLE IF NOT EXISTS frozen (
+    date TEXT PRIMARY KEY
+  )`);
 
   if (!existed) migrateFromJSON();
 
@@ -162,6 +169,30 @@ function handleIPC() {
     return true;
   });
 
+  ipcMain.handle('settings:all', () => {
+    const out = {};
+    for (const r of queryAll('SELECT * FROM settings')) out[r.key] = r.value;
+    return out;
+  });
+
+  ipcMain.handle('settings:set', (_e, key, value) => {
+    if (typeof key !== 'string' || !/^[\w:.-]{1,64}$/.test(key)) throw new Error(`非法设置键:${key}`);
+    withTransaction(() => {
+      db.run('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', [key, String(value).slice(0, 100000)]);
+    });
+    return true;
+  });
+
+  ipcMain.handle('frozen:list', () => queryAll('SELECT date FROM frozen ORDER BY date').map(r => r.date));
+
+  ipcMain.handle('frozen:add', (_e, date) => {
+    assertDate(date);
+    withTransaction(() => {
+      db.run('INSERT OR IGNORE INTO frozen (date) VALUES (?)', [date]);
+    });
+    return true;
+  });
+
   ipcMain.handle('data:export', () => {
     const tasks = queryAll('SELECT * FROM tasks ORDER BY id');
     const records = {};
@@ -169,7 +200,10 @@ function handleIPC() {
       if (!records[r.date]) records[r.date] = { tasks: {} };
       records[r.date].tasks[r.task_id] = r.value;
     }
-    return { tasks, records, exportDate: new Date().toISOString(), version: 2 };
+    const frozen = queryAll('SELECT date FROM frozen ORDER BY date').map(r => r.date);
+    const settings = {};
+    for (const r of queryAll('SELECT * FROM settings')) settings[r.key] = r.value;
+    return { tasks, records, frozen, settings, exportDate: new Date().toISOString(), version: 3 };
   });
 
   ipcMain.handle('data:import', (_e, data) => {
@@ -178,6 +212,7 @@ function handleIPC() {
     withTransaction(() => {
       db.run('DELETE FROM records');
       db.run('DELETE FROM tasks');
+      db.run('DELETE FROM frozen');
       for (const t of tasks) {
         db.run('INSERT INTO tasks (id, name, target, unit, em) VALUES (?, ?, ?, ?, ?)',
           [t.id, t.name, t.target, t.unit, t.em]);
@@ -187,6 +222,16 @@ function handleIPC() {
         for (const [taskId, value] of Object.entries(rec?.tasks || {})) {
           db.run('INSERT OR REPLACE INTO records (date, task_id, value) VALUES (?, ?, ?)',
             [date, toInt(Number(taskId), 1, 1e9, 'taskId'), toInt(value, 0, 1e6, 'value')]);
+        }
+      }
+      // v3 字段:修复日与设置,旧版本文件没有则跳过
+      for (const d of Array.isArray(data.frozen) ? data.frozen : []) {
+        assertDate(d);
+        db.run('INSERT OR IGNORE INTO frozen (date) VALUES (?)', [d]);
+      }
+      for (const [k, v] of Object.entries(data.settings || {})) {
+        if (/^[\w:.-]{1,64}$/.test(k)) {
+          db.run('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', [k, String(v).slice(0, 100000)]);
         }
       }
     });
