@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 每日打卡</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f1a;
+  --s0:#1a1a2e;   /* card surface */
+  --s1:#252542;   /* elevated surface */
+  --s2:#2d2d52;   /* hover surface */
+  --bd:#3a3a6a;   /* border */
+  --tx:#f0f0f5;   /* main text */
+  --mu:#8a8ab0;   /* muted text */
+  --p:#fe2c55;    /* 字节红 - primary */
+  --p2:#ff6b8a;   /* lighter red */
+  --p3:#ff8fa3;   /* accent red */
+  --ok:#00d26a;   /* 字节绿 */
+  --warn:#ffc107;
+  --err:#ff4757;
+  --r:16px;       /* larger border radius */
+  font-size:15px;
+}
+body{
+  background:linear-gradient(180deg,var(--bg) 0%,#1a1a2e 100%);
+  color:var(--tx);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Noto Sans CJK SC",sans-serif;
+  min-height:100vh;
+  padding:20px 16px 80px;
+  max-width:500px;
+  margin:0 auto;
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+}
+button{cursor:pointer;border:none;background:none;font-family:inherit;color:inherit}
+input{font-family:inherit;color:var(--tx)}
+
+/* ── HEADER ─────────────────────────────────────── */
+.hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.hd-l{}
+.hd-logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--p3) 0%,var(--p) 50%,#ff1f4b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.3px}
+.hd-date{font-size:13px;color:var(--mu);margin-top:4px;font-weight:500}
+.hd-btn{background:var(--s0);border:1px solid var(--bd);border-radius:12px;padding:10px 16px;font-size:13px;font-weight:600;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.hd-btn:hover{border-color:var(--p2);background:var(--s1);transform:translateY(-1px);box-shadow:0 4px 12px rgba(254,44,85,.2)}
+
+/* ── STREAK CARD ─────────────────────────────────── */
+.streak-card{
+  border-radius:20px;
+  padding:24px;
+  margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  border:1px solid;
+  transition:all .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+}
+.sk-fire{background:linear-gradient(135deg,#2d1f4a,#3d2a5f);border-color:#6b4ba3;box-shadow:0 8px 24px rgba(107,75,163,.3)}
+.sk-ok{background:linear-gradient(135deg,#0a2d1a,#0f4226);border-color:#00a854;box-shadow:0 8px 24px rgba(0,168,84,.3)}
+.sk-zero{background:linear-gradient(135deg,#2a1a1a,#3d2525);border-color:#c0392b;box-shadow:0 8px 24px rgba(192,57,43,.25)}
+.sk-fresh{background:linear-gradient(135deg,#1a1a2e,#252542);border-color:var(--bd);box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.sk-left{display:flex;align-items:center;gap:16px}
+.sk-icon{font-size:44px;line-height:1;transition:transform .3s;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
+.sk-num{
+  font-size:56px;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-3px;
+  transition:color .4s;
+}
+.sk-num.fire{color:#ffc107;text-shadow:0 0 30px rgba(255,193,7,.5)}
+.sk-num.ok{color:var(--ok);text-shadow:0 0 30px rgba(0,210,106,.5)}
+.sk-num.zero{color:var(--err);text-shadow:0 0 30px rgba(255,71,87,.4)}
+.sk-num.fresh{color:var(--mu)}
+.sk-unit{font-size:13px;color:var(--mu);margin-top:4px;font-weight:500}
+.sk-right{text-align:right}
+.sk-chip{
+  display:inline-block;
+  padding:8px 16px;
+  border-radius:24px;
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:.5px;
+}
+.chip-ok{background:rgba(0,210,106,.15);color:var(--ok);border:1px solid rgba(0,210,106,.3)}
+.chip-go{background:rgba(254,44,85,.15);color:var(--p2);border:1px solid rgba(254,44,85,.3)}
+.chip-bad{background:rgba(255,71,87,.15);color:var(--err);border:1px solid rgba(255,71,87,.3)}
+.chip-fresh{background:var(--s1);color:var(--mu);border:1px solid var(--bd)}
+.sk-best{font-size:12px;color:var(--mu);margin-top:8px;font-weight:500}
+
+/* ── PUNISHMENT NOTICE ──────────────────────────── */
+.punish{
+  background:linear-gradient(135deg,#2a1515,#3d1f1f);
+  border:1px solid rgba(255,71,87,.3);
+  border-radius:20px;
+  padding:16px 20px;
+  margin-bottom:20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  font-size:14px;
+  color:#ff8fa3;
+  box-shadow:0 4px 16px rgba(255,71,87,.15);
+}
+.punish-em{font-size:26px;filter:drop-shadow(0 2px 4px rgba(255,71,87,.3))}
+.punish-t strong{display:block;margin-bottom:3px;font-size:15px;color:var(--err);font-weight:700}
+
+/* ── SECTION LABEL ──────────────────────────────── */
+.sec{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;margin-top:6px}
+.sec-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--mu)}
+.sec-m{font-size:13px;color:var(--mu);font-weight:500}
+.sec-m b{color:var(--p2);font-weight:700}
+
+/* ── TASK CARDS ─────────────────────────────────── */
+.tasks{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.tc{
+  background:var(--s0);
+  border:1px solid var(--bd);
+  border-radius:18px;
+  padding:18px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
+}
+.tc:hover{border-color:var(--p2);box-shadow:0 6px 20px rgba(254,44,85,.15);transform:translateY(-2px)}
+.tc.done{border-color:rgba(0,210,106,.4);background:linear-gradient(135deg,rgba(0,210,106,.08),var(--s0));box-shadow:0 6px 20px rgba(0,210,106,.15)}
+
+.ring-wrap{position:relative;width:58px;height:58px;flex-shrink:0}
+.ring-wrap svg{overflow:visible}
+.rb{fill:none;stroke:var(--bd);stroke-width:3.5}
+.rp{fill:none;stroke-width:3.5;stroke-linecap:round;transition:stroke-dashoffset .5s ease,stroke .3s}
+.rem{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;
+  pointer-events:none;
+}
+
+.tc-body{flex:1;min-width:0}
+.tc-name{font-size:15px;font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx)}
+.tc-prog{font-size:13px;margin-bottom:8px;font-weight:600}
+.tc-bar{height:4px;background:var(--bd);border-radius:3px;overflow:hidden}
+.tc-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+.tc-ctrl{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tc-btn{
+  width:36px;height:36px;
+  border-radius:10px;
+  border:1px solid var(--bd);
+  background:var(--s1);
+  font-size:20px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);user-select:none;
+}
+.tc-btn:hover{border-color:var(--p2);background:var(--s2);transform:scale(1.05)}
+.tc-btn:active{transform:scale(.92)}
+.tc-val{font-size:22px;font-weight:900;min-width:28px;text-align:center;transition:color .2s}
+
+/* ── STATUS BUTTON ──────────────────────────────── */
+.sb{
+  width:100%;padding:18px;border-radius:18px;
+  font-size:15px;font-weight:700;letter-spacing:.5px;
+  margin-bottom:28px;border:2px solid transparent;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 4px 16px rgba(0,0,0,.1);
+}
+.sb.idle{background:var(--s0);border-color:var(--bd);color:var(--mu);cursor:default}
+.sb.partial{background:linear-gradient(135deg,#3d2525,#5a3535);border-color:rgba(255,193,7,.5);color:#ffe066;cursor:default;box-shadow:0 4px 16px rgba(255,193,7,.2)}
+.sb.win{
+  background:linear-gradient(135deg,#0a2d1a,#0f4226);
+  border-color:var(--ok);color:var(--ok);cursor:default;
+  animation:pulse-ok 2.5s infinite;
+  box-shadow:0 8px 24px rgba(0,210,106,.3);
+}
+@keyframes pulse-ok{0%,100%{box-shadow:0 0 0 0 rgba(0,210,106,.4)}50%{box-shadow:0 0 0 12px rgba(0,210,106,0)}}
+
+/* ── CALENDAR ───────────────────────────────────── */
+.cal-wrap{background:var(--s0);border:1px solid var(--bd);border-radius:20px;padding:20px;margin-bottom:20px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.cal-nav{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;transition:all .2s}
+.cal-nav:hover:not(:disabled){border-color:var(--p2);background:var(--s2);transform:translateY(-1px)}
+.cal-nav:disabled{opacity:.3;cursor:default}
+.cal-mo{font-size:16px;font-weight:700;color:var(--tx)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal-dw{text-align:center;font-size:11px;color:var(--mu);padding:4px 0 10px;font-weight:600}
+.cc{
+  aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-size:13px;border-radius:10px;font-weight:600;
+  transition:all .2s;
+}
+.cc-fut{color:var(--bd)}
+.cc-today{border:2px solid var(--p);color:var(--p2);font-weight:800;box-shadow:0 0 12px rgba(254,44,85,.3)}
+.cc-p{background:rgba(0,210,106,.15);color:var(--ok);font-size:14px;border:1px solid rgba(0,210,106,.3)}
+.cc-pp{background:rgba(255,193,7,.12);color:#ffe066;font-size:14px;border:1px solid rgba(255,193,7,.3)}
+.cc-m{background:rgba(255,71,87,.08);color:var(--err);border:1px solid rgba(255,71,87,.2)}
+.cal-leg{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mu);font-weight:500}
+.lg{width:12px;height:12px;border-radius:4px}
+.lg-p{background:rgba(0,210,106,.3);border:1px solid rgba(0,210,106,.5)}.lg-pp{background:rgba(255,193,7,.2);border:1px solid rgba(255,193,7,.4)}.lg-m{background:rgba(255,71,87,.15);border:1px solid rgba(255,71,87,.3)}
+.lg-t{border:2px solid var(--p);border-radius:4px}
+
+/* ── STATS ──────────────────────────────────────── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat{background:var(--s0);border:1px solid var(--bd);border-radius:18px;padding:16px 12px;text-align:center;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.stat:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.stat-v{font-size:30px;font-weight:900;color:var(--p2);line-height:1.2}
+.stat-l{font-size:11px;color:var(--mu);margin-top:6px;line-height:1.4;font-weight:500}
+.stat.warn .stat-v{color:var(--warn)}
+.stat.bad .stat-v{color:var(--err)}
+.stat.good .stat-v{color:var(--ok)}
+
+/* ── BADGES ─────────────────────────────────────── */
+.badges{background:var(--s0);border:1px solid var(--bd);border-radius:20px;padding:20px;margin-bottom:24px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.badge{text-align:center;padding:16px 8px;border-radius:16px;border:1px solid var(--bd);transition:all .3s cubic-bezier(.34,1.56,.64,1)}
+.badge.e{border-color:rgba(255,193,7,.5);background:linear-gradient(135deg,rgba(255,193,7,.1),rgba(255,193,7,.05));box-shadow:0 4px 12px rgba(255,193,7,.15)}
+.badge.e:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,193,7,.25)}
+.badge.lk{opacity:.3;filter:grayscale(.8)}
+.bg-em{font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+.bg-n{font-size:13px;font-weight:700;margin-top:8px}
+.badge.e .bg-n{color:#ffe066}
+.bg-r{font-size:11px;color:var(--mu);margin-top:4px;font-weight:500}
+
+/* ── CONFETTI ────────────────────────────────────── */
+@keyframes fall{from{transform:translateY(-30px) rotate(0);opacity:1}to{transform:translateY(105vh) rotate(720deg);opacity:0}}
+
+/* ── MODAL ──────────────────────────────────────── */
+.ov{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.92);z-index:100;
+  padding:24px 14px;overflow-y:auto;
+  backdrop-filter:blur(8px);
+}
+.ov.open{display:block}
+.modal{background:var(--s0);border:1px solid var(--bd);border-radius:24px;padding:24px;max-width:480px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-title{font-size:18px;font-weight:800;color:var(--tx)}
+.modal-x{
+  width:36px;height:36px;border-radius:10px;
+  background:var(--s1);border:1px solid var(--bd);
+  font-size:18px;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.modal-x:hover{border-color:var(--err);color:var(--err);background:rgba(255,71,87,.1);transform:rotate(90deg)}
+.msec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--mu);margin-bottom:12px}
+
+.te{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:12px;transition:all .2s}
+.te:hover{border-color:var(--p2)}
+.te-r{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px}
+.te-r:last-child{margin-bottom:0}
+.te-lbl{font-size:11px;color:var(--mu);margin-bottom:5px;font-weight:500}
+.inp{
+  background:var(--s0);border:1px solid var(--bd);border-radius:10px;
+  padding:10px 12px;font-size:14px;color:var(--tx);width:100%;outline:none;
+  transition:all .2s;
+}
+.inp:focus{border-color:var(--p2);box-shadow:0 0 0 3px rgba(254,44,85,.15)}
+.inp-n{width:75px;text-align:center}
+.inp-u{width:70px}
+.em-btn{
+  width:44px;height:40px;flex-shrink:0;
+  background:var(--s0);border:1px solid var(--bd);border-radius:10px;
+  font-size:20px;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.em-btn:hover{border-color:var(--p2);transform:scale(1.05)}
+.del-btn{
+  background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);border-radius:10px;
+  padding:10px 14px;color:var(--err);font-size:13px;white-space:nowrap;font-weight:600;
+  transition:all .2s;
+}
+.del-btn:hover{background:rgba(255,71,87,.2);transform:translateY(-1px)}
+.add-btn{
+  width:100%;border:2px dashed var(--bd);border-radius:16px;
+  padding:14px;color:var(--mu);font-size:14px;background:none;font-weight:600;
+  margin-bottom:16px;transition:all .2s;
+}
+.add-btn:hover{border-color:var(--p2);color:var(--p2);background:rgba(254,44,85,.05)}
+.save-btn{
+  width:100%;background:linear-gradient(135deg,var(--p),#ff1f4b);
+  border-radius:16px;padding:16px;color:#fff;font-size:16px;font-weight:700;
+  transition:all .2s;box-shadow:0 4px 16px rgba(254,44,85,.3);
+}
+.save-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(254,44,85,.4)}
+.dz{border-top:1px solid var(--bd);margin-top:20px;padding-top:20px}
+.reset-btn{
+  width:100%;background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);
+  border-radius:12px;padding:12px;color:var(--err);font-size:14px;margin-top:10px;font-weight:600;
+  transition:all .2s;
+}
+.reset-btn:hover{background:rgba(255,71,87,.2);transform:translateY(-1px)}
+
+/* ── EMOJI PICKER ───────────────────────────────── */
+.ep{
+  display:none;position:fixed;
+  background:var(--s1);border:1px solid var(--bd);border-radius:16px;
+  padding:12px;z-index:300;flex-wrap:wrap;gap:6px;
+  width:220px;box-shadow:0 12px 40px rgba(0,0,0,.5);
+}
+.ep.open{display:flex}
+.ep-b{font-size:24px;cursor:pointer;padding:5px;border-radius:8px;border:none;background:none;transition:all .15s}
+.ep-b:hover{background:var(--s2);transform:scale(1.15)}
+
+/* ── TOAST ──────────────────────────────────────── */
+.toast{
+  position:fixed;bottom:32px;left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:var(--s1);border:1px solid var(--bd);border-radius:14px;
+  padding:12px 24px;font-size:14px;font-weight:600;z-index:400;
+  white-space:nowrap;transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<header class="hd">
+  <div class="hd-l">
+    <div class="hd-logo">🎯 每日打卡</div>
+    <div class="hd-date" id="hd-date"></div>
+  </div>
+  <button class="hd-btn" onclick="openModal()">⚙️ 编辑任务</button>
+</header>
+
+<div id="streak-card"></div>
+<div id="punish" style="display:none"></div>
+
+<div class="sec">
+  <div class="sec-t">今日任务</div>
+  <div class="sec-m" id="prog-meta"></div>
+</div>
+<div class="tasks" id="tasks"></div>
+<button class="sb" id="status-btn"></button>
+
+<div class="sec"><div class="sec-t">本月打卡日历</div></div>
+<div class="cal-wrap">
+  <div class="cal-hd">
+    <button class="cal-nav" id="cal-prev" onclick="prevMo()">◀</button>
+    <div class="cal-mo" id="cal-mo"></div>
+    <button class="cal-nav" id="cal-next" onclick="nextMo()">▶</button>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="cal-leg">
+    <div class="leg"><div class="lg lg-p"></div>全部完成</div>
+    <div class="leg"><div class="lg lg-pp"></div>部分完成</div>
+    <div class="leg"><div class="lg lg-m"></div>未打卡</div>
+    <div class="leg"><div class="lg lg-t"></div>今天</div>
+  </div>
+</div>
+
+<div class="sec"><div class="sec-t">统计数据</div></div>
+<div class="stats" id="stats"></div>
+
+<div class="badges">
+  <div class="sec" style="margin-bottom:0"><div class="sec-t">成就徽章</div></div>
+  <div class="bg-grid" id="badges"></div>
+</div>
+
+<!-- 数据管理 -->
+<div class="badges" style="background:linear-gradient(135deg,#0e0a20,#1a1040);border-color:#312e81">
+  <div class="sec" style="margin-bottom:0"><div class="sec-t">💾 数据管理</div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+    <button onclick="exportData()" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--p2);transition:border-color .2s">📤 导出 JSON</button>
+    <button onclick="importData()" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--p2);transition:border-color .2s">📥 导入 JSON</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="ov" id="ov" onclick="ovClick(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title">✏️ 编辑任务</div>
+      <button class="modal-x" onclick="closeModal()">✕</button>
+    </div>
+    <div class="msec">任务列表</div>
+    <div id="te-list"></div>
+    <button class="add-btn" onclick="addTE()">＋ 添加新任务</button>
+    <button class="save-btn" onclick="saveEdits()">💾 保存任务</button>
+    <div class="dz">
+      <div class="msec" style="color:var(--err)">危险操作</div>
+      <button class="reset-btn" onclick="confirmReset()">🗑️ 清空今日进度</button>
+    </div>
+  </div>
+</div>
+
+<!-- Emoji picker -->
+<div class="ep" id="ep"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ══════════════ CONSTANTS ══════════════ */
+const COLORS=['#f97316','#06b6d4','#22c55e','#ec4899','#f59e0b','#8b5cf6','#14b8a6','#3b82f6'];
+const EMS=['🤖','📚','💻','✍️','🧠','🔬','🎯','📝','🏋️','🌟','⚡','🎨','🎵','📊','🔥','💡','🦾','🏆','🌈','⭐'];
+const CIRC=150.796;
+
+const BDEFS=[
+  {id:'b3',  name:'破冰者',  em:'🌱', req:3,  desc:'连续3天'},
+  {id:'b7',  name:'七日勇者',em:'🔥', req:7,  desc:'连续7天'},
+  {id:'b14', name:'两周达人',em:'⭐', req:14, desc:'连续14天'},
+  {id:'b30', name:'月度精英',em:'🏆', req:30, desc:'连续30天'},
+  {id:'b60', name:'钻石意志',em:'💎', req:60, desc:'连续60天'},
+  {id:'b100',name:'百日大师',em:'👑', req:100,desc:'连续100天'},
+];
+
+/* ══════════════ STATE ══════════════ */
+let tasks=[], records={}, calY, calM, draft=[], epTarget=null, nextId=100;
+let prevBest=0; // 已达成的历史最佳连续天数,用于检测新成就解锁
+
+/* ══════════════ DATE ══════════════ */
+const pad=n=>String(n).padStart(2,'0');
+function today(){const d=new Date();return ds(d)}
+function ds(d){return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function addDays(dateStr,n){const d=new Date(dateStr+'T00:00:00');d.setDate(d.getDate()+n);return ds(d)}
+
+/* ══════════════ DATA (语义化 IPC,见 preload.js) ══════════════ */
+const API = window.api;
+
+async function loadFromDB(){
+  tasks = await API.getTasks();
+  nextId = tasks.length ? Math.max(100, ...tasks.map(x=>x.id)) + 1 : 100;
+
+  records = {};
+  for (const r of await API.getRecords()) {
+    if (!records[r.date]) records[r.date] = { tasks: {} };
+    records[r.date].tasks[r.task_id] = r.value;
+  }
+  return tasks.length > 0;
+}
+
+function loadDefaults(){
+  tasks=[];
+  records={};
+  nextId=100;
+}
+
+function ensureToday(){
+  const td=today();
+  if(!records[td])records[td]={tasks:{}};
+}
+
+/* ══════════════ CALCS ══════════════ */
+function isPerfect(d){
+  const r=records[d];
+  if(!r||!r.tasks||!tasks.length)return false;
+  return tasks.every(t=>(r.tasks[t.id]||0)>=t.target);
+}
+function hasProgress(d){
+  const r=records[d];
+  if(!r||!r.tasks)return false;
+  return Object.values(r.tasks).some(v=>v>0);
+}
+function dayDone(d){
+  const r=records[d];
+  if(!r||!r.tasks)return 0;
+  return tasks.filter(t=>(r.tasks[t.id]||0)>=t.target).length;
+}
+
+function calcStreak(){
+  const td=today();
+  let s=0,cur=td;
+  // Count back from today
+  while(isPerfect(cur)){
+    s++;
+    cur=addDays(cur,-1);
+    if(s>3650)break;
+  }
+  // If today not perfect, try from yesterday
+  if(s===0){
+    cur=addDays(td,-1);
+    while(isPerfect(cur)){
+      s++;
+      cur=addDays(cur,-1);
+      if(s>3650)break;
+    }
+    return s; // don't include today
+  }
+  return s;
+}
+
+function calcLongest(){
+  const dates=Object.keys(records).sort();
+  let cur=0,max=0;
+  for(let i=0;i<dates.length;i++){
+    if(isPerfect(dates[i])){
+      if(i>0&&isPerfect(dates[i-1])){
+        const pd=new Date(dates[i-1]+'T00:00:00'),cd=new Date(dates[i]+'T00:00:00');
+        const diff=Math.round((cd-pd)/86400000);
+        cur=diff===1?cur+1:1;
+      }else cur=1;
+      max=Math.max(max,cur);
+    }else cur=0;
+  }
+  return max;
+}
+
+function calcBreaks(){
+  const today_=today();
+  const dates=Object.keys(records).filter(d=>d<today_).sort();
+  let breaks=0,prevP=false;
+  for(const d of dates){
+    const p=isPerfect(d);
+    if(!p&&prevP)breaks++;
+    prevP=p;
+  }
+  return breaks;
+}
+
+function monthRate(y,m){
+  const now=new Date();
+  const dim=new Date(y,m+1,0).getDate();
+  const end=(y===now.getFullYear()&&m===now.getMonth())?now.getDate():dim;
+  let perf=0;
+  for(let d=1;d<=end;d++){
+    if(isPerfect(`${y}-${pad(m+1)}-${pad(d)}`))perf++;
+  }
+  return end>0?Math.round(perf/end*100):0;
+}
+
+function totalPerfect(){
+  return Object.keys(records).filter(d=>isPerfect(d)).length;
+}
+
+/* ══════════════ RENDER ══════════════ */
+function renderAll(){
+  // 统计值统一算一次,各渲染函数共享,避免重复遍历全部记录
+  const ctx={
+    td:today(),
+    s:calcStreak(),
+    ls:calcLongest(),
+    tp:totalPerfect(),
+    bc:calcBreaks(),
+  };
+  renderDate();renderStreak(ctx);renderPunish(ctx);
+  renderTasks();renderStatus(ctx);
+  renderCal();renderStats(ctx);renderBadges(ctx);
+}
+
+function renderDate(){
+  document.getElementById('hd-date').textContent=
+    new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+}
+
+function renderStreak(ctx){
+  const {s,ls,tp,td}=ctx;
+  const todayPerfect=isPerfect(td);
+
+  let icon,cardCls,numCls,chipHtml,bestTip='';
+
+  if(s===0&&tp===0){
+    icon='🎯';cardCls='sk-fresh';numCls='fresh';
+    chipHtml=`<span class="sk-chip chip-fresh">开始打卡之旅</span>`;
+  }else if(s===0){
+    icon='💔';cardCls='sk-zero';numCls='zero';
+    chipHtml=`<span class="sk-chip chip-bad">记录已中断</span>`;
+    if(ls>0)bestTip=`<div class="sk-best">历史最高：${ls}天</div>`;
+  }else if(todayPerfect){
+    icon=s>=30?'🏆':s>=14?'⭐':s>=7?'🔥':'🌱';
+    cardCls='sk-ok';numCls='ok';
+    chipHtml=`<span class="sk-chip chip-ok">✅ 今日已完成！</span>`;
+    if(ls>s)bestTip=`<div class="sk-best">历史最高：${ls}天</div>`;
+    else if(ls>0)bestTip=`<div class="sk-best">🏅 正在刷新历史记录！</div>`;
+  }else{
+    icon=s>=7?'🔥':'💪';
+    cardCls='sk-fire';numCls='fire';
+    chipHtml=`<span class="sk-chip chip-go">⚡ 今日进行中</span>`;
+    if(ls>s)bestTip=`<div class="sk-best">历史最高：${ls}天</div>`;
+  }
+
+  document.getElementById('streak-card').innerHTML=`
+    <div class="streak-card ${cardCls}">
+      <div class="sk-left">
+        <div class="sk-icon">${icon}</div>
+        <div>
+          <div class="sk-num ${numCls}">${s}</div>
+          <div class="sk-unit">天连续打卡</div>
+        </div>
+      </div>
+      <div class="sk-right">
+        ${chipHtml}
+        ${bestTip}
+      </div>
+    </div>`;
+}
+
+function renderPunish(ctx){
+  const el=document.getElementById('punish');
+  const {bc,s}=ctx;
+  if(bc>0&&s===0){
+    el.style.display='';
+    el.innerHTML=`
+      <div class="punish">
+        <div class="punish-em">💔</div>
+        <div class="punish-t">
+          <strong>连续记录已中断，已中断 ${bc} 次</strong>
+          今天是重新开始的机会，坚持下去！
+        </div>
+      </div>`;
+  }else{
+    el.style.display='none';
+  }
+}
+
+function renderTasks(){
+  const td=today();
+  const rec=records[td]||{tasks:{}};
+  const done=dayDone(td);
+  const el=document.getElementById('prog-meta');
+  el.innerHTML=`<b>${done}</b> / ${tasks.length} 项完成`;
+
+  if(!tasks.length){
+    document.getElementById('tasks').innerHTML=
+      `<div style="color:var(--mu);text-align:center;padding:24px 0">暂无任务，点击"编辑任务"添加</div>`;
+    return;
+  }
+
+  document.getElementById('tasks').innerHTML=tasks.map((t,i)=>{
+    const n=rec.tasks?.[t.id]||0;
+    const pct=Math.min(1,n/(t.target||1));
+    const offset=CIRC*(1-pct);
+    const col=COLORS[i%COLORS.length];
+    const isDone=n>=t.target;
+    return`
+    <div class="tc${isDone?' done':''}">
+      <div class="ring-wrap">
+        <svg width="54" height="54" viewBox="0 0 54 54">
+          <circle class="rb" cx="27" cy="27" r="22"/>
+          <circle class="rp" cx="27" cy="27" r="22"
+            stroke="${col}"
+            stroke-dasharray="${CIRC}"
+            stroke-dashoffset="${offset}"
+            style="transform:rotate(-90deg);transform-origin:27px 27px"/>
+        </svg>
+        <div class="rem">${isDone?'✅':esc(t.em)}</div>
+      </div>
+      <div class="tc-body">
+        <div class="tc-name">${esc(t.name)}</div>
+        <div class="tc-prog" style="color:${col}">${n} / ${t.target} ${esc(t.unit)}</div>
+        <div class="tc-bar"><div class="tc-fill" style="width:${pct*100}%;background:${col}"></div></div>
+      </div>
+      <div class="tc-ctrl">
+        <button class="tc-btn" title="减少" onclick="chg(${t.id},-1)">−</button>
+        <div class="tc-val" style="color:${col}">${n}</div>
+        <button class="tc-btn" title="增加" onclick="chg(${t.id},1)">＋</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderStatus(ctx){
+  const {td,s}=ctx;
+  const btn=document.getElementById('status-btn');
+  const done=dayDone(td);
+  const total=tasks.length;
+
+  if(total===0){
+    btn.style.display='none';
+    return;
+  }
+  if(done===total){
+    btn.style.display='block';
+    btn.className='sb win';
+    btn.textContent=`🎉 今日所有任务完成！连续打卡第 ${s} 天`;
+  }else if(done>0||hasProgress(td)){
+    btn.style.display='block';
+    btn.className='sb partial';
+    btn.textContent=`⏳ 还有 ${total-done} 项任务未完成，加油！`;
+  }else{
+    // 清空进度后隐藏状态按钮
+    btn.style.display='none';
+  }
+}
+
+function renderCal(){
+  const now=new Date();
+  if(calY===undefined){calY=now.getFullYear();calM=now.getMonth()}
+  document.getElementById('cal-mo').textContent=`${calY}年${calM+1}月`;
+
+  const isCurrentMo=calY===now.getFullYear()&&calM===now.getMonth();
+  document.getElementById('cal-next').disabled=isCurrentMo;
+
+  const firstDow=new Date(calY,calM,1).getDay();
+  const dim=new Date(calY,calM+1,0).getDate();
+  const td=today();
+  const nowMid=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+
+  let h=['日','一','二','三','四','五','六'].map(d=>`<div class="cal-dw">${d}</div>`).join('');
+  for(let i=0;i<firstDow;i++)h+=`<div class="cc"></div>`;
+  for(let d=1;d<=dim;d++){
+    const dateStr=`${calY}-${pad(calM+1)}-${pad(d)}`;
+    const isTd=dateStr===td;
+    const isFut=new Date(calY,calM,d)>nowMid;
+    let cls='cc',txt=d;
+    if(isFut){cls+=' cc-fut'}
+    else if(isTd){
+      cls+=' cc-today';
+      if(isPerfect(dateStr)){cls+=' cc-p';txt='✓'}
+    }else if(isPerfect(dateStr)){cls+=' cc-p';txt='✓'}
+    else if(hasProgress(dateStr)){cls+=' cc-pp';txt='~'}
+    else{cls+=' cc-m'}
+    h+=`<div class="${cls}" title="${dateStr}">${txt}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=h;
+}
+
+function renderStats(ctx){
+  const {s,ls,tp,bc}=ctx;
+  const now=new Date();
+  const mr=monthRate(now.getFullYear(),now.getMonth());
+
+  const rows=[
+    {v:s, l:'当前连续<br>打卡天数', c:s>0?'good':'bad'},
+    {v:ls,l:'历史最长<br>连续记录', c:''},
+    {v:tp,l:'累计完美<br>打卡天数', c:tp>0?'good':''},
+    {v:mr+'%',l:'本月完成<br>率',        c:mr>=80?'good':mr>=50?'warn':'bad'},
+    {v:bc,l:'历史连续<br>中断次数',       c:bc===0?'good':bc>3?'bad':'warn'},
+    {v:tasks.length,l:'当前任务<br>数量',  c:''},
+  ];
+  document.getElementById('stats').innerHTML=rows.map(r=>
+    `<div class="stat ${r.c}"><div class="stat-v">${r.v}</div><div class="stat-l">${r.l}</div></div>`
+  ).join('');
+}
+
+function renderBadges(ctx){
+  const best=Math.max(ctx.s,ctx.ls);
+  document.getElementById('badges').innerHTML=BDEFS.map(b=>{
+    const e=best>=b.req;
+    return`<div class="badge ${e?'e':'lk'}">
+      <div class="bg-em">${b.em}</div>
+      <div class="bg-n">${b.name}</div>
+      <div class="bg-r">${b.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════ INTERACTIONS ══════════════ */
+async function chg(taskId,delta){
+  ensureToday();
+  const td=today();
+  const task=tasks.find(t=>t.id===taskId);
+  if(!task)return;
+  const cur=records[td].tasks[taskId]||0;
+  const newVal=Math.max(0,cur+delta);
+  if(newVal===cur)return;
+  const wasAll=isPerfect(td);
+  records[td].tasks[taskId]=newVal;
+  try{
+    await API.setRecord(td, taskId, newVal);
+  }catch(e){
+    records[td].tasks[taskId]=cur; // 写库失败,回滚内存状态
+    toast('⚠️ 保存失败，请重试');
+    renderAll();
+    return;
+  }
+  if(!wasAll&&isPerfect(td)){
+    celebrate();
+    toast('🎉 太棒了！今日任务全部完成！');
+    checkBadge();
+  }
+  renderAll();
+}
+
+function celebrate(){
+  const ems=['🎉','✨','🎊','⭐','💫','🌟','💥','🎈'];
+  for(let i=0;i<18;i++){
+    const el=document.createElement('div');
+    const em=ems[Math.floor(Math.random()*ems.length)];
+    el.style.cssText=`position:fixed;top:-20px;left:${10+Math.random()*80}%;
+      font-size:${18+Math.random()*14}px;z-index:500;pointer-events:none;
+      animation:fall ${1.2+Math.random()*1.8}s ease-in forwards;
+      animation-delay:${Math.random()*.4}s`;
+    el.textContent=em;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),3000);
+  }
+}
+
+function checkBadge(){
+  const best=Math.max(calcStreak(),calcLongest());
+  // 找出本次新跨过的最高门槛(原实现只在恰好等于阈值时触发,跳档会漏报)
+  const unlocked=BDEFS.filter(b=>best>=b.req&&prevBest<b.req).pop();
+  if(best>prevBest)prevBest=best;
+  if(unlocked)setTimeout(()=>toast(`🏅 新成就解锁：${unlocked.em} ${unlocked.name}！`),2000);
+}
+
+function prevMo(){
+  calM--;if(calM<0){calM=11;calY--}
+  renderCal();
+}
+function nextMo(){
+  const now=new Date();
+  if(calY===now.getFullYear()&&calM>=now.getMonth())return;
+  calM++;if(calM>11){calM=0;calY++}
+  renderCal();
+}
+
+/* ══════════════ MODAL ══════════════ */
+function openModal(){
+  draft=tasks.map(t=>({...t}));
+  renderTE();
+  document.getElementById('ov').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('ov').classList.remove('open');
+  closeEP();
+}
+function ovClick(e){if(e.target===document.getElementById('ov'))closeModal()}
+
+function renderTE(){
+  document.getElementById('te-list').innerHTML=draft.map((t,i)=>`
+    <div class="te" data-i="${i}">
+      <div class="te-r">
+        <div>
+          <div class="te-lbl">emoji</div>
+          <button class="em-btn" onclick="openEP(${i})">${esc(t.em)}</button>
+        </div>
+        <div style="flex:1">
+          <div class="te-lbl">任务名称</div>
+          <input class="inp" value="${esc(t.name)}" placeholder="任务名称"
+            oninput="draft[${i}].name=this.value">
+        </div>
+      </div>
+      <div class="te-r">
+        <div>
+          <div class="te-lbl">每日目标</div>
+          <input class="inp inp-n" type="number" min="1" max="999" value="${t.target}"
+            oninput="draft[${i}].target=parseInt(this.value)||1">
+        </div>
+        <div>
+          <div class="te-lbl">单位</div>
+          <input class="inp inp-u" value="${esc(t.unit)}" placeholder="个/篇"
+            oninput="draft[${i}].unit=this.value">
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="del-btn" onclick="delTE(${i})">删除</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function addTE(){
+  const i=draft.length;
+  draft.push({id:nextId++,name:'',target:1,unit:'个',em:EMS[i%EMS.length]});
+  renderTE();
+  setTimeout(()=>{
+    document.querySelector('#te-list .te:last-child .inp')?.focus();
+  },50);
+}
+function delTE(i){
+  if(draft.length<=1){toast('⚠️ 至少需要保留一个任务');return}
+  draft.splice(i,1);renderTE();
+}
+async function saveEdits(){
+  for(const t of draft){
+    if(!t.name.trim()){toast('⚠️ 任务名称不能为空');return}
+    if(!t.target||t.target<1){toast('⚠️ 目标数量至少为1');return}
+  }
+  const cleaned=draft.map(t=>({...t,name:t.name.trim(),unit:t.unit.trim()||'个'}));
+  try{
+    await API.saveTasks(cleaned);
+  }catch(e){
+    toast('⚠️ 保存失败，请重试');
+    return;
+  }
+  tasks=cleaned;
+  closeModal();renderAll();
+  toast('✅ 任务已保存！');
+}
+async function confirmReset(){
+  if(!confirm('确认清空今日所有进度？此操作不可撤销。'))return;
+  try{
+    await API.deleteDateRecords(today());
+  }catch(e){
+    toast('⚠️ 操作失败，请重试');
+    return;
+  }
+  delete records[today()];
+  closeModal();renderAll();
+  toast('🗑️ 今日进度已清空');
+}
+
+async function exportData(){
+  let data;
+  try{
+    data = await API.exportJSON();
+  }catch(e){
+    toast('⚠️ 导出失败，请重试');
+    return;
+  }
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`daily-checkin-${today()}.json`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('📤 数据已导出为 JSON 文件');
+}
+
+async function importData(){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{
+    const file=e.target.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=async ev=>{
+      try{
+        const data=JSON.parse(ev.target.result);
+        if(!Array.isArray(data.tasks)||!data.tasks.length||typeof data.records!=='object'){toast('⚠️ 文件格式不正确');return}
+        if(!confirm(`导入数据将覆盖当前所有记录（含 ${Object.keys(data.records).length} 天打卡记录），确认？`))return;
+        await API.importJSON(data);
+        await loadFromDB();
+        ensureToday();
+        closeModal();renderAll();
+        toast('📥 数据导入成功！');
+      }catch(err){toast('⚠️ 文件解析失败：'+err.message)}
+    };
+    reader.readAsText(file);
+  };
+  inp.click();
+}
+
+/* ══════════════ EMOJI PICKER ══════════════ */
+function openEP(idx){
+  epTarget=idx;
+  const ep=document.getElementById('ep');
+  ep.innerHTML=EMS.map(e=>`<button class="ep-b" onclick="pickEM('${e}')">${e}</button>`).join('');
+  const btns=document.querySelectorAll('.em-btn');
+  const btn=btns[idx];
+  if(btn){
+    const r=btn.getBoundingClientRect();
+    ep.style.top=Math.min(r.bottom+6,window.innerHeight-180)+'px';
+    ep.style.left=Math.max(4,Math.min(r.left,window.innerWidth-220))+'px';
+  }
+  ep.classList.add('open');
+  setTimeout(()=>document.addEventListener('click',epOut),100);
+}
+function pickEM(em){
+  if(epTarget!==null){draft[epTarget].em=em;renderTE()}
+  closeEP();
+}
+function closeEP(){
+  document.getElementById('ep').classList.remove('open');
+  document.removeEventListener('click',epOut);
+  epTarget=null;
+}
+function epOut(e){
+  if(!document.getElementById('ep').contains(e.target))closeEP();
+}
+
+/* ══════════════ TOAST ══════════════ */
+let _tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+/* ══════════════ UTILS ══════════════ */
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ══════════════ 跨天检测 & 快捷键 ══════════════ */
+let _day=today();
+function checkRollover(){
+  // 应用挂过零点后,所有"今日"相关状态要切到新的一天
+  if(today()===_day)return;
+  _day=today();
+  ensureToday();
+  renderAll();
+  toast('🌅 新的一天开始了，加油打卡！');
+}
+setInterval(checkRollover,30000);
+window.addEventListener('focus',checkRollover);
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(document.getElementById('ep').classList.contains('open'))closeEP();
+  else if(document.getElementById('ov').classList.contains('open'))closeModal();
+});
+
+/* ══════════════ INIT ══════════════ */
+async function init(){
+  if (!window.api) {
+    document.body.innerHTML = '<div style="color:#fff;text-align:center;padding:40px">请使用 Electron 启动此应用<br><br><code>npm start</code></div>';
+    return;
+  }
+
+  let loaded=false;
+  try{
+    loaded = await loadFromDB();
+  }catch(e){
+    toast('⚠️ 数据加载失败：'+e.message);
+  }
+  if (!loaded) loadDefaults();
+
+  ensureToday();
+  prevBest=Math.max(calcStreak(),calcLongest());
+  renderAll();
+
+  const yst=addDays(today(),-1);
+  if(!records[yst]&&totalPerfect()>0&&!isPerfect(today())){
+    setTimeout(()=>toast('💪 新的一天开始了，加油打卡！'),800);
+  }
+}
+
+init();
+</script> 
+</body>
+</html>
