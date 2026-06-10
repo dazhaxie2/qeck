@@ -357,6 +357,125 @@ input{font-family:inherit;color:var(--tx)}
 .sync-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .sync-row .save-btn{flex:1}
 .sync-meta{font-size:12px;color:var(--mu);margin-top:8px}
+
+/* ── PRODUCT POLISH ───────────────────────────────
+   A quieter desktop-product skin layered over the original mobile UI. */
+:root{
+  --bg:#101214;
+  --s0:#181d22;
+  --s1:#20262d;
+  --s2:#29313a;
+  --bd:#313b45;
+  --tx:#f6f8fa;
+  --mu:#93a1ad;
+  --p:#38d6c5;
+  --p2:#ff6b7a;
+  --p3:#ffbd4a;
+  --ok:#35d07f;
+  --warn:#ffbd4a;
+  --err:#ff5c75;
+  --info:#6bb6ff;
+  --r:8px;
+  font-size:15px;
+}
+body{
+  max-width:560px;
+  padding:0 16px 48px;
+  background:linear-gradient(180deg,#0f1113 0%,#15191d 48%,#101214 100%);
+}
+button:focus-visible,input:focus-visible{outline:2px solid var(--p);outline-offset:2px}
+.hd{
+  position:sticky;top:0;z-index:40;
+  align-items:center;
+  margin:0 -16px 16px;
+  padding:14px 16px;
+  background:rgba(16,18,20,.88);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  backdrop-filter:blur(16px);
+}
+.hd-logo{
+  font-size:20px;
+  color:var(--tx);
+  background:none;
+  -webkit-text-fill-color:currentColor;
+  letter-spacing:0;
+}
+.hd-date{font-size:12px;color:var(--mu)}
+.hd-btn,.cal-nav{
+  border-radius:8px;
+  background:#161b20;
+  border-color:#34404a;
+  box-shadow:none;
+}
+.hd-btn:hover,.cal-nav:hover:not(:disabled){border-color:var(--p);box-shadow:0 8px 24px rgba(56,214,197,.12)}
+.overview{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.ov-item{
+  min-width:0;
+  padding:12px;
+  border:1px solid var(--bd);
+  border-radius:8px;
+  background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012));
+}
+.ov-v{font-size:22px;font-weight:850;line-height:1;color:var(--tx);letter-spacing:0}
+.ov-l{margin-top:7px;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-item:nth-child(1) .ov-v{color:var(--p)}
+.ov-item:nth-child(2) .ov-v{color:var(--warn)}
+.ov-item:nth-child(3) .ov-v{color:var(--info)}
+.streak-card{
+  border-radius:8px;
+  padding:20px;
+  margin-bottom:16px;
+  background:linear-gradient(180deg,#1b2026,#171b20);
+  border-color:#34404a;
+  box-shadow:0 18px 48px rgba(0,0,0,.26);
+}
+.sk-fire,.sk-ok,.sk-zero,.sk-fresh{background:linear-gradient(180deg,#1b2026,#171b20);box-shadow:0 18px 48px rgba(0,0,0,.26)}
+.sk-fire{border-color:rgba(255,189,74,.45)}
+.sk-ok{border-color:rgba(53,208,127,.45)}
+.sk-zero{border-color:rgba(255,92,117,.42)}
+.sk-fresh{border-color:#34404a}
+.sk-num{font-size:54px;letter-spacing:0}
+.sk-num.fire{color:var(--warn);text-shadow:none}
+.sk-num.ok{color:var(--ok);text-shadow:none}
+.sk-num.zero{color:var(--err);text-shadow:none}
+.sk-chip{border-radius:999px;letter-spacing:0}
+.chip-ok{background:rgba(53,208,127,.11);color:var(--ok);border-color:rgba(53,208,127,.28)}
+.chip-go{background:rgba(255,189,74,.12);color:var(--warn);border-color:rgba(255,189,74,.3)}
+.chip-bad{background:rgba(255,92,117,.12);color:var(--err);border-color:rgba(255,92,117,.3)}
+.chip-fresh{background:rgba(147,161,173,.1);color:var(--mu);border-color:#34404a}
+.punish,.tc,.cal-wrap,.heat-wrap,.stat,.badges,.te,.modal{border-radius:8px;box-shadow:none}
+.tc,.cal-wrap,.heat-wrap,.stat,.badges,.te{background:#181d22;border-color:#313b45}
+.tc{padding:16px;gap:14px}
+.tc:hover{border-color:rgba(56,214,197,.55);box-shadow:0 12px 28px rgba(0,0,0,.2);transform:translateY(-1px)}
+.tc.done{border-color:rgba(53,208,127,.38);background:linear-gradient(180deg,rgba(53,208,127,.08),#181d22)}
+.tc-btn,.modal-x,.em-btn,.inp,.del-btn,.reset-btn,.add-btn,.save-btn{border-radius:8px}
+.tc-btn{background:#20262d}
+.sb{border-radius:8px;margin-bottom:24px;box-shadow:none}
+.sb.win{box-shadow:0 0 0 1px rgba(53,208,127,.18),0 12px 32px rgba(53,208,127,.12)}
+.sb.partial{background:rgba(255,189,74,.11);border-color:rgba(255,189,74,.36);color:var(--warn)}
+.sec{margin-top:8px}
+.sec-t{letter-spacing:.9px}
+.stat-v{font-size:28px;letter-spacing:0}
+.badge{border-radius:8px}
+.badge.e{background:linear-gradient(180deg,rgba(255,189,74,.12),rgba(255,189,74,.04));border-color:rgba(255,189,74,.38)}
+.badge.e .bg-n{color:var(--warn)}
+.buddy-panel{background:linear-gradient(180deg,#15212a,#181d22);border-color:rgba(107,182,255,.32)}
+.data-panel{background:linear-gradient(180deg,#1d1b22,#181d22);border-color:#3c4048}
+.buddy-code{border-radius:8px;color:var(--info);background:#141b22}
+.flame{border-radius:8px}
+.toast{border-radius:8px;background:#20262d;border-color:#3b4650}
+@media (max-width:460px){
+  body{padding-left:12px;padding-right:12px}
+  .hd{margin-left:-12px;margin-right:-12px;padding-left:12px;padding-right:12px}
+  .hd>div:last-child{gap:6px}
+  .hd-btn{padding:9px 10px;font-size:12px}
+  .overview{grid-template-columns:1fr 1fr}
+  .overview .ov-item:last-child{grid-column:1 / -1}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .bg-grid{grid-template-columns:repeat(2,1fr)}
+  .tc{align-items:flex-start}
+  .tc-ctrl{flex-direction:column;gap:6px}
+}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 </head>
@@ -373,6 +492,7 @@ input{font-family:inherit;color:var(--tx)}
   </div>
 </header>
 
+<div class="overview" id="overview"></div>
 <div id="streak-card"></div>
 <div id="punish" style="display:none"></div>
 
@@ -418,13 +538,13 @@ input{font-family:inherit;color:var(--tx)}
 </div>
 
 <!-- 打卡搭子 -->
-<div class="badges" style="background:linear-gradient(135deg,#0a1a2e,#10243d);border-color:rgba(74,168,255,.35)">
+<div class="badges buddy-panel">
   <div class="sec" style="margin-bottom:0"><div class="sec-t" id="sec-buddy"></div></div>
   <div id="buddy-body" style="margin-top:14px"></div>
 </div>
 
 <!-- 数据管理 -->
-<div class="badges" style="background:linear-gradient(135deg,#0e0a20,#1a1040);border-color:#312e81">
+<div class="badges data-panel">
   <div class="sec" style="margin-bottom:0"><div class="sec-t" id="sec-data"></div></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
     <button id="btn-export" onclick="exportData()" style="flex:1;min-width:120px;background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:11px 14px;font-size:13px;font-weight:600;color:var(--p2);transition:border-color .2s">📤 导出 JSON</button>
@@ -465,7 +585,7 @@ input{font-family:inherit;color:var(--tx)}
 <div class="ep" id="ep"></div>
 <div class="toast" id="toast"></div>
 
-<script src="core.js"></script>
+<script src="../shared/core.js"></script>
 <script src="storage.js"></script>
 <script src="renderer.js"></script>
 <script src="sync.js"></script>

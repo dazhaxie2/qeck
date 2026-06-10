@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
    sync.js — 客户端云同步引擎 + 打卡搭子 UI
-   依赖:core.js(I18N)、renderer.js 暴露的 window.app 桥
+   依赖:src/shared/core.js(I18N)、renderer.js 暴露的 window.app 桥
    存储经与 renderer 相同的 api(Electron IPC 或 localStorage 适配器)。
    设备本地设置键:sync_url / sync_token / sync_code / sync_name /
                   sync_meta(变更时间戳) / sync_last

@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
-const Core = require('../core.js');
+const Core = require('../src/shared/core.js');
 
 /* 造一个单任务(target=1)的状态:perfect 数组里的日期记为完成 */
 function mk(perfect, frozen = [], partial = []) {

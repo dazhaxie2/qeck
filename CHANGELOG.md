@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- 整理目录结构：Electron、Renderer、Shared Core、Sync Server 分层放入 `src/`
+- 更新脚本、测试、打包清单和文档路径
+- 新增运行截图生成脚本 `scripts/capture-preview.js`
+
 ## 1.1.0
 
 - 拆出 `core.js`，核心连续打卡、修复券和统计逻辑可单元测试

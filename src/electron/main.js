@@ -82,7 +82,7 @@ async function initDB() {
 }
 
 function migrateFromJSON() {
-  const jsonPath = path.join(__dirname, 'daily-checkin.json');
+  const jsonPath = path.join(__dirname, '..', 'renderer', 'daily-checkin.json');
   if (!fs.existsSync(jsonPath)) return;
   try {
     const raw = fs.readFileSync(jsonPath, 'utf-8');
@@ -256,7 +256,7 @@ function createWindow() {
     },
     title: '🎯 每日打卡',
   });
-  mainWindow.loadFile(path.join(__dirname, 'daily-checkin.html'));
+  mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
   mainWindow.setMenuBarVisibility(false);
   mainWindow.once('ready-to-show', () => mainWindow.show());
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));

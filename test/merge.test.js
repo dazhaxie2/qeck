@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert');
-const { merge, duoStreak } = require('../server.js');
+const { merge, duoStreak } = require('../src/server/server.js');
 
 const T1 = [{ id: 1, name: 'A', target: 1, unit: '个', em: '🎯' }];
 const T2 = [{ id: 1, name: 'B', target: 2, unit: '个', em: '🔥' }];

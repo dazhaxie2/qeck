@@ -113,6 +113,29 @@
     $('remind-time').value = state.settings.remindTime || '';
   }
 
+  function renderOverview() {
+    const el = $('overview');
+    if (!el) return;
+    const st = stateForCore();
+    const done = Core.dayDone(st, state.today);
+    const total = state.tasks.length || 0;
+    const now = new Date(state.today + 'T00:00:00');
+    const rate = Core.monthRate(st, now.getFullYear(), now.getMonth(), state.today);
+    el.innerHTML = `
+      <div class="ov-item">
+        <div class="ov-v">${done}/${total}</div>
+        <div class="ov-l">${tx('ovToday')}</div>
+      </div>
+      <div class="ov-item">
+        <div class="ov-v">${rate}%</div>
+        <div class="ov-l">${tx('ovMonth')}</div>
+      </div>
+      <div class="ov-item">
+        <div class="ov-v">${freezeLeft()}</div>
+        <div class="ov-l">${tx('ovRepair')}</div>
+      </div>`;
+  }
+
   function renderStreak() {
     const st = stateForCore();
     const streak = Core.calcStreak(st, state.today);
@@ -302,6 +325,7 @@
 
   function renderAll() {
     applyStaticText();
+    renderOverview();
     renderStreak();
     renderTasks();
     renderStatus();

@@ -1,8 +1,8 @@
 /* Service Worker:浏览器/PWA 模式离线缓存(Electron file:// 下不会注册) */
 const CACHE = 'daily-checkin-v2';
 const ASSETS = [
-  './daily-checkin.html',
-  './core.js',
+  './index.html',
+  '../shared/core.js',
   './storage.js',
   './renderer.js',
   './sync.js',

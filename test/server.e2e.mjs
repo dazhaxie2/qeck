@@ -11,7 +11,7 @@ const PORT = 8899;
 const BASE = `http://127.0.0.1:${PORT}`;
 const dataFile = join(mkdtempSync(join(tmpdir(), 'dc-e2e-')), 'data.json');
 
-const srv = spawn(process.execPath, [join(ROOT, 'server.js')], {
+const srv = spawn(process.execPath, [join(ROOT, 'src', 'server', 'server.js')], {
   env: { ...process.env, PORT: String(PORT), SYNC_DATA: dataFile },
   stdio: 'pipe',
 });
@@ -100,6 +100,7 @@ try {
   assert.equal(page.status, 200);
   assert.ok((await page.text()).includes('renderer.js'), '首页返回应用');
   assert.equal((await fetch(BASE + '/core.js')).status, 200);
+  assert.equal((await fetch(BASE + '/shared/core.js')).status, 200);
   assert.equal((await fetch(BASE + '/server-data.json')).status, 404, '数据文件不可被静态读取');
 
   console.log('SERVER E2E: ALL PASS ✅');

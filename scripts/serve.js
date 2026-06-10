@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.resolve(__dirname, '..');
+const rendererRoot = path.join(root, 'src', 'renderer');
+const sharedRoot = path.join(root, 'src', 'shared');
 const preferredPort = Number(process.env.PORT || 4173);
 const mime = {
   '.html': 'text/html; charset=utf-8',
@@ -21,10 +23,13 @@ function send(res, status, body, type = 'text/plain; charset=utf-8') {
 function createServer(port) {
   const server = http.createServer((req, res) => {
     const urlPath = decodeURIComponent(new URL(req.url, `http://localhost:${port}`).pathname);
-    const relative = urlPath === '/' ? 'daily-checkin.html' : urlPath.slice(1);
-    const file = path.resolve(root, relative);
+    const relative = urlPath === '/' || urlPath === '/daily-checkin.html' ? 'index.html' : urlPath.slice(1);
+    const normalized = relative === 'core.js' ? 'shared/core.js' : relative;
+    const file = normalized.startsWith('shared/')
+      ? path.resolve(sharedRoot, normalized.slice('shared/'.length))
+      : path.resolve(rendererRoot, normalized);
 
-    if (!file.startsWith(root)) return send(res, 403, 'Forbidden');
+    if (!file.startsWith(rendererRoot) && !file.startsWith(sharedRoot)) return send(res, 403, 'Forbidden');
     fs.readFile(file, (err, data) => {
       if (err) return send(res, 404, 'Not found');
       send(res, 200, data, mime[path.extname(file)] || 'application/octet-stream');

@@ -3,11 +3,12 @@
   "version": "2.1.0",
   "private": true,
   "description": "带连续打卡、修复券、热力图、成就、云同步与打卡搭子的每日习惯应用(桌面 + Web)",
-  "main": "main.js",
+  "main": "src/electron/main.js",
   "scripts": {
     "start": "electron .",
     "web": "node scripts/serve.js",
-    "serve": "node server.js",
+    "serve": "node src/server/server.js",
+    "screenshot": "electron scripts/capture-preview.js",
     "test": "node --test test/core.test.js test/merge.test.js && node test/server.e2e.mjs",
     "build": "electron-builder --win"
   },
@@ -36,17 +37,9 @@
       "target": "portable"
     },
     "files": [
-      "main.js",
-      "preload.js",
-      "core.js",
-      "storage.js",
-      "renderer.js",
-      "sync.js",
-      "daily-checkin.html",
-      "daily-checkin.json",
-      "manifest.webmanifest",
-      "icon.svg",
-      "sw.js",
+      "src/electron/**/*",
+      "src/renderer/**/*",
+      "src/shared/**/*",
       "node_modules/sql.js/dist/sql-wasm.wasm"
     ],
     "directories": {

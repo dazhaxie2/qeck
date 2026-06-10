@@ -11,3 +11,4 @@ yarn-error.log*
 *.sqlite
 *.sqlite.bak
 *.tmp
+server-data.json

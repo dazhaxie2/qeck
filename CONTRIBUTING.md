@@ -22,9 +22,10 @@ npm start
 
 ## 代码约定
 
-- `core.js` 放纯函数逻辑，保持可测试、无 DOM、无 Electron 依赖
-- `renderer.js` 负责 UI 状态和交互，不直接访问 Node API
-- `main.js` 负责持久化、窗口、安全边界和 IPC
+- `src/shared/core.js` 放纯函数逻辑，保持可测试、无 DOM、无 Electron 依赖
+- `src/renderer/renderer.js` 负责 UI 状态和交互，不直接访问 Node API
+- `src/electron/main.js` 负责持久化、窗口、安全边界和 IPC
+- `src/server/server.js` 负责同步 API、搭子配对和 PWA 静态托管
 - 新增持久化字段时，导入导出 JSON 也要同步考虑
 
 ## Issue 怎么写更容易被处理

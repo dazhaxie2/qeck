@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
    storage.js — 浏览器模式存储适配器(localStorage)
-   与 preload.js 暴露的 window.api 接口完全一致,
+   与 src/electron/preload.js 暴露的 window.api 接口完全一致,
    使同一份页面既能跑在 Electron(SQLite),也能直接部署为网页 / PWA。
    ══════════════════════════════════════════════════════════════ */
 (function (root) {

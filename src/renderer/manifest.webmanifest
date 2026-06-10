@@ -2,7 +2,7 @@
   "name": "每日打卡",
   "short_name": "打卡",
   "description": "带连续打卡、热力图、成就徽章和 JSON 备份的每日习惯追踪应用。",
-  "start_url": "daily-checkin.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#0f0f1a",
   "theme_color": "#fe2c55",

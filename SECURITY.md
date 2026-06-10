@@ -15,7 +15,7 @@
 ## 安全边界
 
 - 渲染进程不直接访问 Node API
-- `preload.js` 只暴露白名单 API
+- `src/electron/preload.js` 只暴露白名单 API
 - IPC 不暴露原始 SQL
 - 输入会在主进程做基础校验
 - 窗口禁止导航与新窗口弹出

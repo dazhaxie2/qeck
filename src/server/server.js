@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════════════════════════
-   server.js — 零依赖云同步服务器(node server.js 即可运行/部署)
+   server.js — 零依赖云同步服务器(node src/server/server.js 即可运行/部署)
 
    职责:
    1. 静态托管 PWA(白名单文件)
@@ -16,10 +16,13 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const Core = require('./core.js');
+const Core = require('../shared/core.js');
 
 const PORT = Number(process.env.PORT) || 8787;
-const DATA_FILE = process.env.SYNC_DATA || path.join(__dirname, 'server-data.json');
+const ROOT = path.resolve(__dirname, '..', '..');
+const RENDERER_DIR = path.join(ROOT, 'src', 'renderer');
+const SHARED_DIR = path.join(ROOT, 'src', 'shared');
+const DATA_FILE = process.env.SYNC_DATA || path.join(ROOT, 'server-data.json');
 
 /* ── 持久化 ── */
 function loadDB() {
@@ -151,15 +154,17 @@ function sanitizeToday(q) {
 
 /* ── 静态文件(白名单) ── */
 const STATIC = {
-  '/': ['daily-checkin.html', 'text/html; charset=utf-8'],
-  '/daily-checkin.html': ['daily-checkin.html', 'text/html; charset=utf-8'],
-  '/core.js': ['core.js', 'text/javascript; charset=utf-8'],
-  '/storage.js': ['storage.js', 'text/javascript; charset=utf-8'],
-  '/renderer.js': ['renderer.js', 'text/javascript; charset=utf-8'],
-  '/sync.js': ['sync.js', 'text/javascript; charset=utf-8'],
-  '/sw.js': ['sw.js', 'text/javascript; charset=utf-8'],
-  '/manifest.webmanifest': ['manifest.webmanifest', 'application/manifest+json'],
-  '/icon.svg': ['icon.svg', 'image/svg+xml'],
+  '/': [RENDERER_DIR, 'index.html', 'text/html; charset=utf-8'],
+  '/index.html': [RENDERER_DIR, 'index.html', 'text/html; charset=utf-8'],
+  '/daily-checkin.html': [RENDERER_DIR, 'index.html', 'text/html; charset=utf-8'],
+  '/core.js': [SHARED_DIR, 'core.js', 'text/javascript; charset=utf-8'],
+  '/shared/core.js': [SHARED_DIR, 'core.js', 'text/javascript; charset=utf-8'],
+  '/storage.js': [RENDERER_DIR, 'storage.js', 'text/javascript; charset=utf-8'],
+  '/renderer.js': [RENDERER_DIR, 'renderer.js', 'text/javascript; charset=utf-8'],
+  '/sync.js': [RENDERER_DIR, 'sync.js', 'text/javascript; charset=utf-8'],
+  '/sw.js': [RENDERER_DIR, 'sw.js', 'text/javascript; charset=utf-8'],
+  '/manifest.webmanifest': [RENDERER_DIR, 'manifest.webmanifest', 'application/manifest+json'],
+  '/icon.svg': [RENDERER_DIR, 'icon.svg', 'image/svg+xml'],
 };
 
 /* ── 应用 ── */
@@ -252,8 +257,8 @@ function createApp() {
 
       /* —— 静态 PWA —— */
       if (req.method === 'GET' && STATIC[p]) {
-        const [file, type] = STATIC[p];
-        const full = path.join(__dirname, file);
+        const [base, file, type] = STATIC[p];
+        const full = path.join(base, file);
         if (fs.existsSync(full)) {
           res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'no-cache' });
           return res.end(fs.readFileSync(full));

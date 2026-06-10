@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/preview.svg" alt="每日打卡 Daily Check-in preview" width="100%">
+  <img src="docs/runtime-preview.png" alt="每日打卡 Daily Check-in runtime preview" width="420">
 </p>
 
 <h1 align="center">🎯 每日打卡 Daily Check-in</h1>
@@ -19,12 +19,12 @@
 
 - **不是普通 todo list**：按“每日目标 + 连续反馈 + 成就解锁”设计，更适合学习、运动、阅读、刷题这类需要长期坚持的事情。
 - **离线优先**：桌面版数据保存在本机 SQLite，浏览器版使用 localStorage，不连云端也完整可用。
-- **可选云同步**：自带零依赖同步服务器（`server.js`），多设备字段级合并（LWW + 墓碑删除 + 修复日并集），令牌即身份，无需密码。
+- **可选云同步**：自带零依赖同步服务器（`src/server/server.js`），多设备字段级合并（LWW + 墓碑删除 + 修复日并集），令牌即身份，无需密码。
 - **打卡搭子**：邀请码绑定一位搭子，互看今日状态与连续天数；“共同火焰”只在两人都完成的日子燃烧——一人断签，两人一起熄灭。
 - **断签修复券**：每 7 个完美打卡日获得 1 张修复券，偶尔断一天也能保住长期节奏。
 - **可视化反馈完整**：月历、热力图、当前连续天数、历史最长、月完成率、成就徽章都在一个界面里。
 - **可导入导出**：一键导出 JSON，换设备、备份、迁移都方便。
-- **代码结构轻量**：核心打卡计算在 `core.js`，无 DOM / Electron 依赖，已配套 `node:test` 单元测试。
+- **代码结构清晰**：核心打卡计算在 `src/shared/core.js`，无 DOM / Electron 依赖，已配套 `node:test` 单元测试。
 
 ## 快速开始
 
@@ -85,21 +85,35 @@ npm run web
 
 ## 项目结构
 
-| 文件 | 作用 |
-| --- | --- |
-| `main.js` | Electron 主进程、窗口创建、SQLite 初始化、IPC 处理 |
-| `preload.js` | 通过 `contextBridge` 暴露白名单 API，隔离渲染层和原始 SQL |
-| `daily-checkin.html` | 页面结构与样式 |
-| `renderer.js` | UI 渲染、交互、导入导出、提醒、分享卡片 |
-| `core.js` | 纯函数领域逻辑：日期、连续天数、修复券、成就、统计、双语词典（Node 与浏览器共用） |
-| `storage.js` | 浏览器模式的 localStorage 适配器（与 Electron IPC 接口一致） |
-| `sync.js` | 客户端云同步引擎与搭子 UI：变更打点、防抖增量同步、合并回写 |
-| `server.js` | 零依赖云同步服务器：注册 / 鉴权 / LWW 合并 / 搭子配对 / 静态托管 PWA，服务端复用 `core.js` |
-| `manifest.webmanifest` / `sw.js` | PWA 元数据与离线缓存 |
-| `test/core.test.js` | 核心逻辑单元测试 |
-| `test/merge.test.js` | 同步合并算法与共同火焰单元测试 |
-| `test/server.e2e.mjs` | 服务器 API 全流程 E2E（注册→同步→配对→冲突合并） |
-| `scripts/serve.js` | 无依赖本地静态预览服务器 |
+```text
+.
+├─ src/
+│  ├─ electron/
+│  │  ├─ main.js              # Electron 主进程、SQLite、IPC、安全边界
+│  │  └─ preload.js           # contextBridge 白名单 API
+│  ├─ renderer/
+│  │  ├─ index.html           # 页面结构与样式
+│  │  ├─ renderer.js          # UI 渲染、交互、提醒、分享卡片
+│  │  ├─ storage.js           # 浏览器模式 localStorage 适配器
+│  │  ├─ sync.js              # 云同步客户端与打卡搭子 UI
+│  │  ├─ manifest.webmanifest # PWA 元数据
+│  │  ├─ sw.js                # PWA 离线缓存
+│  │  ├─ icon.svg             # 应用图标
+│  │  └─ daily-checkin.json   # 首次启动迁移用示例数据
+│  ├─ shared/
+│  │  └─ core.js              # 纯函数领域逻辑，Node 与浏览器共用
+│  └─ server/
+│     └─ server.js            # 零依赖同步服务器与 PWA 静态托管
+├─ scripts/
+│  ├─ serve.js                # 纯静态本地预览
+│  └─ capture-preview.js      # 生成 README 运行截图
+├─ test/
+│  ├─ core.test.js            # 核心逻辑单元测试
+│  ├─ merge.test.js           # 同步合并与共同火焰测试
+│  └─ server.e2e.mjs          # 服务器 API 全流程 E2E
+└─ docs/
+   └─ runtime-preview.png     # README 真实运行截图
+```
 
 ## 安全设定
 
@@ -113,7 +127,7 @@ npm run web
 
 ## 路线图
 
-短期计划见 [ROADMAP.md](ROADMAP.md)。云同步与打卡搭子已落地（自托管 `server.js`）；下一步方向：移动端原生封装（Capacitor 复用 `core.js`）、搭子互推提醒、小组打卡与排行榜、截图自动化、更多平台打包。
+短期计划见 [ROADMAP.md](ROADMAP.md)。云同步与打卡搭子已落地（自托管 `src/server/server.js`）；下一步方向：移动端原生封装（Capacitor 复用 `src/shared/core.js`）、搭子互推提醒、小组打卡与排行榜、截图自动化、更多平台打包。
 
 ## 参与贡献
 
